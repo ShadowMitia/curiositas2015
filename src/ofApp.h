@@ -1,39 +1,67 @@
-#pragma once
+#ifndef OF_APP
+#define OF_APP
+
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
 #include "ofxFluid.h"
 
-class ofApp : public ofBaseApp{
+// Windows users:
+// You MUST install the libfreenect kinect drivers in order to be able to use
+// ofxKinect. Plug in the kinect and point your Windows Device Manager to the
+// driver folder in:
+//
+//     ofxKinect/libs/libfreenect/platform/windows/inf
+//
+// This should install the Kinect camera, motor, & audio drivers.
+//
+// You CANNOT use this driver and the OpenNI driver with the same device. You
+// will have to manually update the kinect device to use the libfreenect drivers
+// and/or uninstall/reinstall it in Device Manager.
+//
+// No way around the Windows driver dance, sorry.
 
-	public:
-		void setup();
-		void update();
-		void draw();
+// uncomment this to read from two kinects simultaneously
+//#define USE_TWO_KINECTS
 
-		void keyPressed(int key);
-		void keyReleased(int key);
-		void mouseMoved(int x, int y );
-		void mouseDragged(int x, int y, int button);
-		void mousePressed(int x, int y, int button);
-		void mouseReleased(int x, int y, int button);
-		void windowResized(int w, int h);
-		void dragEvent(ofDragInfo dragInfo);
-		void gotMessage(ofMessage msg);
+#define WIDTH 1024
+#define HEIGHT 768
 
-		    ofxFluid fluid;
 
-    ofVec2f oldM;
-    int     width,height;
-    bool    bPaint, bObstacle, bBounding, bClear;
+class ofApp : public ofBaseApp {
+public:
 
-        //fluid curiositas
-	ofPoint                         posFluid;
-	ofPoint                         colFluid;
-    //float                         RoseFluid[5];
+	void setup();
+	void update();
+	void draw();
+	void exit();
 
-    vector<float>                   rose;
-    list<vector<float> >            posRose;
+	void keyPressed(int key);
+	void mouseDragged(int x, int y, int button);
+	void mousePressed(int x, int y, int button);
+	void mouseReleased(int x, int y, int button);
+	void windowResized(int w, int h);
+
+	ofxKinect kinect;
+
+	ofxCvColorImage colorImg;
+	ofxCvGrayscaleImage depthImage; // the far thresholded image
+
+	ofxCvContourFinder contourFinder;
+
+	int threshold = 200;
+
+    // ofxKinect
+    int camWidth;
+    int camHeight;
+
+    ofxFluid fluid;
+
+    std::deque<ofPolyline> polyContour;
 
 };
+
+
+
+#endif // OF_APP

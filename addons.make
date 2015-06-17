@@ -1,5 +1,4 @@
-ofxOpenCv
 ofxKinect
-ofxBox2d
+ofxOpenCv
 ofxFluid
 ofxFX
