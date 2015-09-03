@@ -12,13 +12,19 @@ void ofApp::setup() {
     setupSmokeFluid();
 
     // set framerate to 60 fps
-	ofSetFrameRate(60);
+	//ofSetFrameRate(60);
 
     // load shader to blackout the hand
-	blackHandShader.load("", "blackHandShader.frag");
+	blackHandShader.load("", "shader.frag");
 
     // debug HUD boolean
 	showDebugVideo = false;
+
+	buffer.allocate(WIDTH, HEIGHT, GL_RGBA);
+
+	buffer.begin();
+	ofClear(0,0,0,0);
+	buffer.end();
 }
 
 //--------------------------------------------------------------
@@ -30,7 +36,7 @@ void ofApp::update() {
 	fluid.update();
 
     updateCvImages();
-    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height)/2, 5, false, true);
+    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height) / 2, 5, false, true);
     collectContours();
 
 	// show framerate in titlebar
@@ -39,24 +45,52 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+    ofBackground(255, 255, 255);
+
+
+    buffer.begin();
+    // draw the contours, and make the smoke see it as an obstacle
+    fluid.begin();
+    for (int i = 0; i < contourFinder.blobs.size(); i++){
+
+        polyContour[i].draw();
+
+    }
+    fluid.end();
 
     // draw the smoke
     fluid.draw();
 
-    // draw the contours, and make the smoke see it as an obstacle
+     buffer.end();
+
+    //buffer.draw(0, 0);
+
+    /* contour shader */
+    blackHandShader.begin();
+
+    blackHandShader.setUniformTexture("tex", grayImage.getTextureReference(), 0);
+    blackHandShader.setUniformTexture("fbo", buffer.getTextureReference(), 1);
+
+    //contourFinder.draw(0, 0);
+    grayImage.draw(0,0);
+    blackHandShader.end();
 
 
+
+    /* contour non shader
     for (int i = 0; i < contourFinder.blobs.size(); i++){
-        fluid.begin();
         polyContour[i].draw();
-        fluid.end();
     }
+    */
 
-    for (int i = 0; i < contourFinder.blobs.size(); i++){
-        blackHandShader.begin();
-        polyContour[i].draw();
-        blackHandShader.end();
-    }
+
+
+
+
+
+
+
+
 
     // show debug HUD
     if (showDebugVideo){
@@ -82,7 +116,6 @@ void ofApp::keyPressed (int key) {
                 if (farThreshold > 255) farThreshold = 255;
 		    }
 			break;
-
 		case '<':
 		case ',':
 		    if (showDebugVideo){
@@ -170,7 +203,7 @@ void ofApp::setupSmokeFluid() {
 
     // list of all the points of origin of the different smoke points
     std::vector<ofPoint> origins;
-    origins.push_back(ofPoint(WIDTH / 2, 0));
+    origins.push_back(ofPoint(WIDTH / 4, 0));
     //origins.push_back(ofPoint(WIDTH / 4, 0));
     //origins.push_back(ofPoint(50, 0));
     //origins.push_back(ofPoint(WIDTH - 50, 0));
@@ -186,15 +219,15 @@ void ofApp::setupSmokeFluid() {
 
     // initalise every smoke point with a radius of 10.f and a y vel of 2
     for (int i = 0; i < origins.size(); i++){
-        fluid.addConstantForce(origins[i], ofPoint(0,2), smokeColors[i], 10.f);
+        fluid.addConstantForce(origins[i], ofPoint(0,1), smokeColors[i], 10.f);
     }
 }
 
 void ofApp::drawDebug() {
     // show rgb feed
-    grayImage.draw(0, 0, 400, 300);
+    kinect.draw(0, 0, 400, 300);
     // show contours found bw contourFinder
-    contourFinder.draw(10, 320, 400, 300);
+    contourFinder.draw(0, 320);
     // Show debug info
     stringstream ss;
     ss << "Far threshold " << farThreshold << " \nNear Threshold " << nearThreshold << " \nKinect width " << kinect.width << " \nKinect height " << kinect.height;
@@ -202,7 +235,8 @@ void ofApp::drawDebug() {
 }
 
 void ofApp::updateCvImages() {
-	if (kinect.isFrameNew()){
+	if (kinect.isFrameNew()) {
+        grayImage.resize(kinect.width, kinect.height);
         grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
 
 		// load grayscale depth image from the kinect source
@@ -213,6 +247,8 @@ void ofApp::updateCvImages() {
         grayThreshNear.threshold(nearThreshold, true);
         grayThreshFar.threshold(farThreshold);
         cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
+
+        grayImage.resize(WIDTH, HEIGHT);
 
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
 	}

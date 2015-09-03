@@ -7,8 +7,9 @@
 #include "ofxKinect.h"
 #include "ofxFluid.h"
 
-#define WIDTH 1024
-#define HEIGHT 768
+#define WIDTH 1280
+#define HEIGHT 800
+
 
 
 class ofApp : public ofBaseApp {
@@ -63,6 +64,8 @@ public:
     int farThreshold;
 
     bool showDebugVideo;
+
+    ofFbo buffer;
 };
 
 
