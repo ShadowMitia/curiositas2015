@@ -1,6 +1,12 @@
 /bin
 !/bin/data
 
+/obj
+
+*.workspace.layout
+*.depend
+*.layout
+
 # Created by https://www.gitignore.io
 
 ### Linux ###
