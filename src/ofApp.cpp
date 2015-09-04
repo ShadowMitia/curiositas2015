@@ -9,6 +9,7 @@ void ofApp::setup() {
     // call setup methods
     setupKinect();
     setupOpenCv();
+    cvfilter.setup(kinect.width, kinect.height, WIDTH, HEIGHT);
 
     smoke.setup(WIDTH, HEIGHT);
     for (int i = 4; i < WIDTH; i += 100){
@@ -37,7 +38,8 @@ void ofApp::update() {
 	smoke.update();
 
     updateCvImages();
-    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height) / 2, 5, false, true);
+    cvfilter.update(kinect.getDepthPixels());
+    contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
     collectContours();
 
 	// show framerate in titlebar
@@ -51,11 +53,11 @@ void ofApp::draw() {
 
     buffer.begin();
     // draw the contours, and make the smoke see it as an obstacle
-    smoke.fluid.begin();
+    smoke.begin();
     for (int i = 0; i < contourFinder.blobs.size(); i++){
         polyContour[i].draw();
     }
-    smoke.fluid.end();
+    smoke.end();
 
     // draw the smoke
     smoke.draw();
@@ -67,11 +69,11 @@ void ofApp::draw() {
     /* contour shader */
     blackHandShader.begin();
 
-    blackHandShader.setUniformTexture("tex", grayImage.getTextureReference(), 0);
+    blackHandShader.setUniformTexture("tex", cvfilter.getThreshImage().getTextureReference(), 0);
     blackHandShader.setUniformTexture("fbo", buffer.getTextureReference(), 1);
 
     //contourFinder.draw(0, 0);
-    grayImage.draw(0,0);
+    cvfilter.draw();
     blackHandShader.end();
 
     // show debug HUD
@@ -155,20 +157,13 @@ void ofApp::setupKinect() {
     // make sure the kinect is horizontal
     kinect.setCameraTiltAngle(0);
 
-    // values for near and far threshold
-    // these values the points which are interesting
-    nearThreshold = 241;
-	farThreshold = 230;
+
 }
 
 void ofApp::setupOpenCv() {
     // allocates the rgb image holder for the kinect feed
 	colorImg.allocate(kinect.width, kinect.height);
-	// allocate the grayscale image holder for the kinect feed
-	grayImage.allocate(kinect.width, kinect.height);
-	// these are used to make the grawscale with the points we want
-	grayThreshNear.allocate(kinect.width, kinect.height);
-	grayThreshFar.allocate(kinect.width, kinect.height);
+
 }
 
 
@@ -185,22 +180,7 @@ void ofApp::drawDebug() {
 
 void ofApp::updateCvImages() {
 	if (kinect.isFrameNew()) {
-        grayImage.resize(kinect.width, kinect.height);
-        grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
-		// load grayscale depth image from the kinect source
-		grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
-        grayThreshNear = grayImage;
-        grayThreshFar = grayImage;
-        grayThreshNear.threshold(nearThreshold, true);
-        grayThreshFar.threshold(farThreshold);
-        cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-        grayImage.mirror(false, true);
-        grayImage.resize(WIDTH, HEIGHT);
-
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
-        //colorImg.mirror(false, true);
 	}
 }
 

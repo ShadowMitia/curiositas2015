@@ -17,10 +17,12 @@ class Smoke
         void begin();
         void end();
 
-        ofxFluid fluid;
+
 
     protected:
     private:
+
+        ofxFluid fluid;
 
             // list of all the points of origin of the different smoke points
         std::vector<ofPoint> origins;

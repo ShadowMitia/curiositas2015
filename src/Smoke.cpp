@@ -24,7 +24,6 @@ void Smoke::setup(int screen_width, int screen_height, float scale, bool HD) {
 }
 
 void Smoke::addSmokePoint(ofPoint position, ofFloatColor color) {
-    std::cout << "addSmokePoint" << std::endl;
     origins.push_back(position);
     smokeColors.push_back(color);
     int index = origins.size() - 1;
@@ -37,12 +36,10 @@ void Smoke::update() {
 }
 
 void Smoke::begin(){
-    std::cout << "begin" << std::endl;
     fluid.begin();
 }
 
 void Smoke::end(){
-    std::cout << "end" << std::endl;
     fluid.end();
 }
 

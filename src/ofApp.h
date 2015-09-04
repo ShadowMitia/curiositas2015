@@ -6,6 +6,7 @@
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
 #include "Smoke.h"
+#include "OpenCvFilter.h"
 
 #define WIDTH 1280
 #define HEIGHT 800
@@ -41,9 +42,7 @@ public:
 
 	ofxCvColorImage colorImg;
 
-	ofxCvGrayscaleImage grayImage; // grayscale depth image
-	ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
-	ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
+
 
 	ofxCvContourFinder contourFinder;
 
@@ -62,6 +61,7 @@ public:
     ofFbo buffer;
 
     Smoke smoke;
+    OpenCvFilter cvfilter;
 };
 
 
