@@ -9,10 +9,8 @@ void ofApp::setup() {
     // call setup methods
     setupKinect();
     setupOpenCv();
-    setupSmokeFluid();
+    smoke.setup(WIDTH, HEIGHT);
 
-    // set framerate to 60 fps
-	//ofSetFrameRate(60);
 
     // load shader to blackout the hand
 	blackHandShader.load("", "shader.frag");
@@ -33,7 +31,7 @@ void ofApp::update() {
 	ofBackground(100, 100, 100);
 
 	kinect.update();
-	fluid.update();
+	smoke.update();
 
     updateCvImages();
     contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height) / 2, 5, false, true);
@@ -50,18 +48,16 @@ void ofApp::draw() {
 
     buffer.begin();
     // draw the contours, and make the smoke see it as an obstacle
-    fluid.begin();
+    smoke.begin();
     for (int i = 0; i < contourFinder.blobs.size(); i++){
-
         polyContour[i].draw();
-
     }
-    fluid.end();
+    smoke.end();
 
     // draw the smoke
-    fluid.draw();
+    smoke.draw();
 
-     buffer.end();
+    buffer.end();
 
     //buffer.draw(0, 0);
 
@@ -74,23 +70,6 @@ void ofApp::draw() {
     //contourFinder.draw(0, 0);
     grayImage.draw(0,0);
     blackHandShader.end();
-
-
-
-    /* contour non shader
-    for (int i = 0; i < contourFinder.blobs.size(); i++){
-        polyContour[i].draw();
-    }
-    */
-
-
-
-
-
-
-
-
-
 
     // show debug HUD
     if (showDebugVideo){
@@ -189,38 +168,6 @@ void ofApp::setupOpenCv() {
 	grayThreshFar.allocate(kinect.width, kinect.height);
 }
 
-void ofApp::setupSmokeFluid() {
-
-    // allocate the size need to show the smoke
-    fluid.allocate(WIDTH, HEIGHT, 0.5);
-
-    // some values to get some nice smoke
-    fluid.dissipation = 0.97;
-    fluid.velocityDissipation = 0.995;
-
-    // We don't want any default gravity values
-    fluid.setGravity(ofVec2f(0.0,0.0));
-
-    // list of all the points of origin of the different smoke points
-    std::vector<ofPoint> origins;
-    // for each point we define a color
-    std::vector<ofFloatColor> smokeColors;
-    for (int i = 4; i < WIDTH; i += 100){
-        origins.push_back(ofPoint(i, 0));
-        smokeColors.push_back(ofFloatColor(0.5,0.1,0.0)); // orange
-    }
-
-
-
-
-
-
-
-    // initalise every smoke point with a radius of 10.f and a y vel of 2
-    for (int i = 0; i < origins.size(); i++){
-        fluid.addConstantForce(origins[i], ofPoint(0,1), smokeColors[i], 1.7f);
-    }
-}
 
 void ofApp::drawDebug() {
     // show rgb feed
