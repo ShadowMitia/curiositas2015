@@ -62,6 +62,8 @@ public:
 
     Smoke smoke;
     OpenCvFilter cvfilter;
+    bool threadStarted;
+
 };
 
 

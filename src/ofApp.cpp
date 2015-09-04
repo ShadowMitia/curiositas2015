@@ -10,6 +10,7 @@ void ofApp::setup() {
     setupKinect();
     setupOpenCv();
     cvfilter.setup(kinect.width, kinect.height, WIDTH, HEIGHT);
+    //cvfilter.startThread();
 
     smoke.setup(WIDTH, HEIGHT);
     for (int i = 4; i < WIDTH; i += 100){
@@ -27,6 +28,8 @@ void ofApp::setup() {
 	buffer.begin();
 	ofClear(0,0,0,0);
 	buffer.end();
+
+	threadStarted = false;
 }
 
 //--------------------------------------------------------------
@@ -37,10 +40,20 @@ void ofApp::update() {
 	kinect.update();
 	smoke.update();
 
-    updateCvImages();
-    cvfilter.update(kinect.getDepthPixels());
-    contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
-    collectContours();
+    if (kinect.isFrameNew()) {
+        updateCvImages();
+        cvfilter.update(kinect.getDepthPixels());
+
+        if (!threadStarted){
+            cvfilter.startThread(true);
+            threadStarted = true;
+        }
+
+        cvfilter.lock();
+        contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
+        collectContours();
+        cvfilter.unlock();
+    }
 
 	// show framerate in titlebar
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
@@ -88,6 +101,8 @@ void ofApp::draw() {
 void ofApp::exit() {
 	kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
 	kinect.close(); // close the kinect
+
+	cvfilter.stopThread();
 }
 
 //--------------------------------------------------------------

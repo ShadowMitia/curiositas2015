@@ -725,6 +725,8 @@
 		<Unit filename="icon.rc">
 			<Option compilerVar="WINDRES" />
 		</Unit>
+		<Unit filename="src/OpenCvFilter.cpp" />
+		<Unit filename="src/OpenCvFilter.h" />
 		<Unit filename="src/Smoke.cpp" />
 		<Unit filename="src/Smoke.h" />
 		<Unit filename="src/main.cpp">

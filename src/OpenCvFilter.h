@@ -4,12 +4,13 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 
-class OpenCvFilter {
+class OpenCvFilter : public ofThread {
 
     public:
         OpenCvFilter() {}
         void setup(int imageWidth, int imageHeight, int screenWidth, int screenHeight);
-        void update(unsigned char* depthPixels);
+        void update(unsigned char* _depthPixels);
+        void threadedFunction();
         void draw();
 
         ofxCvGrayscaleImage& getThreshImage() { return grayImage; }
@@ -19,6 +20,8 @@ class OpenCvFilter {
         ofxCvGrayscaleImage grayImage; // grayscale depth image
         ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
         ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
+
+        unsigned char * depthPixels;
 
         int w;
         int h;
