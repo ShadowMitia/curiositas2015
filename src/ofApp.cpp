@@ -9,8 +9,11 @@ void ofApp::setup() {
     // call setup methods
     setupKinect();
     setupOpenCv();
-    smoke.setup(WIDTH, HEIGHT);
 
+    smoke.setup(WIDTH, HEIGHT);
+    for (int i = 4; i < WIDTH; i += 100){
+            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    }
 
     // load shader to blackout the hand
 	blackHandShader.load("", "shader.frag");
@@ -48,11 +51,11 @@ void ofApp::draw() {
 
     buffer.begin();
     // draw the contours, and make the smoke see it as an obstacle
-    smoke.begin();
+    smoke.fluid.begin();
     for (int i = 0; i < contourFinder.blobs.size(); i++){
         polyContour[i].draw();
     }
-    smoke.end();
+    smoke.fluid.end();
 
     // draw the smoke
     smoke.draw();

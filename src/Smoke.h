@@ -16,9 +16,12 @@ class Smoke
         void setup(int screen_width, int screen_height, float scale = 0.5, bool HD = true);
         void begin();
         void end();
+
+        ofxFluid fluid;
+
     protected:
     private:
-        ofxFluid fluid;
+
             // list of all the points of origin of the different smoke points
         std::vector<ofPoint> origins;
         // for each point we define a color
