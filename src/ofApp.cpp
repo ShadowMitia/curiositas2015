@@ -195,31 +195,30 @@ void ofApp::setupSmokeFluid() {
     fluid.allocate(WIDTH, HEIGHT, 0.5);
 
     // some values to get some nice smoke
-    fluid.dissipation = 0.99;
-    fluid.velocityDissipation = 0.99;
+    fluid.dissipation = 0.97;
+    fluid.velocityDissipation = 0.995;
 
     // We don't want any default gravity values
     fluid.setGravity(ofVec2f(0.0,0.0));
 
     // list of all the points of origin of the different smoke points
     std::vector<ofPoint> origins;
-    origins.push_back(ofPoint(WIDTH / 4, 0));
-    //origins.push_back(ofPoint(WIDTH / 4, 0));
-    //origins.push_back(ofPoint(50, 0));
-    //origins.push_back(ofPoint(WIDTH - 50, 0));
-    //origins.push_back(ofPoint(WIDTH - WIDTH / 4, 0));
-
     // for each point we define a color
     std::vector<ofFloatColor> smokeColors;
-    smokeColors.push_back(ofFloatColor(0.5,0.1,0.0)); // orange
-    //smokeColors.push_back(ofFloatColor(1.0,0.0,0.0)); // red
-    //smokeColors.push_back(ofFloatColor(0.0,1.0,0.0)); // green
-    //smokeColors.push_back(ofFloatColor(0.0,0.0,1.0)); // blue
-    //smokeColors.push_back(ofFloatColor(0.1,0.0,0.5)); // purple
+    for (int i = 4; i < WIDTH; i += 100){
+        origins.push_back(ofPoint(i, 0));
+        smokeColors.push_back(ofFloatColor(0.5,0.1,0.0)); // orange
+    }
+
+
+
+
+
+
 
     // initalise every smoke point with a radius of 10.f and a y vel of 2
     for (int i = 0; i < origins.size(); i++){
-        fluid.addConstantForce(origins[i], ofPoint(0,1), smokeColors[i], 10.f);
+        fluid.addConstantForce(origins[i], ofPoint(0,1), smokeColors[i], 1.7f);
     }
 }
 
@@ -247,10 +246,11 @@ void ofApp::updateCvImages() {
         grayThreshNear.threshold(nearThreshold, true);
         grayThreshFar.threshold(farThreshold);
         cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-
+        grayImage.mirror(false, true);
         grayImage.resize(WIDTH, HEIGHT);
 
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
+        //colorImg.mirror(false, true);
 	}
 }
 

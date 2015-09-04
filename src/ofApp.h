@@ -10,8 +10,6 @@
 #define WIDTH 1280
 #define HEIGHT 800
 
-
-
 class ofApp : public ofBaseApp {
 public:
 
