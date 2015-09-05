@@ -6117,12 +6117,27 @@
 	"ofAppGlutWindow.h"
 	"ofGLProgrammableRenderer.h"
 
-1441377062 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.h
+1441457325 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.h
 	"ofMain.h"
 	"ofxOpenCv.h"
 	"ofxKinect.h"
+	"Smoke.h"
+	"OpenCvFilter.h"
+
+1441457349 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.cpp
+	"ofApp.h"
+
+1441394125 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.h
+	"ofMain.h"
 	"ofxFluid.h"
 
-1441376858 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.cpp
-	"ofApp.h"
+1441395437 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.cpp
+	"Smoke.h"
+
+1441465600 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.h
+	"ofMain.h"
+	"ofxOpenCv.h"
+
+1441465893 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.cpp
+	"OpenCvFilter.h"
 
