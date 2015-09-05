@@ -2,10 +2,13 @@
 
 void OpenCvFilter::setup(int imageWidth, int imageHeight, int screenWidth, int screenHeight){
 	// allocate the grayscale image holder for the kinect feed
-	grayImage.allocate(imageWidth, imageHeight);
+	grayImage.allocate(screenWidth, screenHeight);
 	// these are used to make the grawscale with the points we want
-	grayThreshNear.allocate(imageWidth, imageHeight);
-	grayThreshFar.allocate(imageWidth, imageHeight);
+	grayThreshNear.allocate(screenWidth, screenHeight);
+	grayThreshFar.allocate(screenWidth, screenHeight);
+
+	temp.allocate(imageWidth, imageHeight);
+
 	w = imageWidth;
 	h = imageHeight;
 	s_w = screenWidth;
@@ -22,24 +25,18 @@ void OpenCvFilter::setup(int imageWidth, int imageHeight, int screenWidth, int s
 
 void OpenCvFilter::update(unsigned char* _depthPixels){
     depthPixels = _depthPixels;
-}
+    temp.setFromPixels(depthPixels, w, h);
+    grayImage.setROI(0, 0, w, h);
+    cvAnd(grayImage.getCvImage(), temp.getCvImage(), grayImage.getCvImage(), NULL);
 
-void OpenCvFilter::threadedFunction() {
-    while (isThreadRunning()){
-        lock();
-        grayImage.resize(w, h );
-        grayImage.setFromPixels(depthPixels, w, h );
-
-        grayThreshNear = grayImage;
-        grayThreshFar = grayImage;
-        grayThreshNear.threshold(nearThreshold, true);
-        grayThreshFar.threshold(farThreshold);
-        cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-        grayImage.mirror(false, true);
-        grayImage.resize(s_w, s_h);
-        unlock();
-        ofSleepMillis(10);
-    }
+    grayThreshNear = grayImage;
+    grayThreshNear.setROI(0, 0, w, h);
+    grayThreshFar = grayImage;
+    grayThreshFar.setROI(0, 0, w, h);
+    grayThreshNear.threshold(nearThreshold, true);
+    grayThreshFar.threshold(farThreshold);
+    cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
+    grayImage.mirror(false, true);
 }
 
 

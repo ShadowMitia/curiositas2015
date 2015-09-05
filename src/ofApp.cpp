@@ -13,9 +13,15 @@ void ofApp::setup() {
     //cvfilter.startThread();
 
     smoke.setup(WIDTH, HEIGHT);
+    /*
     for (int i = 4; i < WIDTH; i += 100){
             smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
     }
+    */
+    for (int i = 4; i < WIDTH; i += 100){
+            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    }
+
 
     // load shader to blackout the hand
 	blackHandShader.load("", "shader.frag");
@@ -29,7 +35,6 @@ void ofApp::setup() {
 	ofClear(0,0,0,0);
 	buffer.end();
 
-	threadStarted = false;
 }
 
 //--------------------------------------------------------------
@@ -44,15 +49,8 @@ void ofApp::update() {
         updateCvImages();
         cvfilter.update(kinect.getDepthPixels());
 
-        if (!threadStarted){
-            cvfilter.startThread(true);
-            threadStarted = true;
-        }
-
-        cvfilter.lock();
         contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
         collectContours();
-        cvfilter.unlock();
     }
 
 	// show framerate in titlebar
@@ -101,8 +99,6 @@ void ofApp::draw() {
 void ofApp::exit() {
 	kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
 	kinect.close(); // close the kinect
-
-	cvfilter.stopThread();
 }
 
 //--------------------------------------------------------------

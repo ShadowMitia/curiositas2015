@@ -34,10 +34,12 @@
 				<Option compiler="gcc" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
+					<Add option="-pg" />
 					<Add option="-g" />
 					<Add directory="include" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg -lgmon" />
 					<Add option="../../../libs/openFrameworksCompiled/lib/win_cb/openFrameworksDebug.lib" />
 				</Linker>
 			</Target>
