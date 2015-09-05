@@ -9,10 +9,19 @@ void ofApp::setup() {
     // call setup methods
     setupKinect();
     setupOpenCv();
-    setupSmokeFluid();
+    cvfilter.setup(kinect.width, kinect.height, WIDTH, HEIGHT);
+    //cvfilter.startThread();
 
-    // set framerate to 60 fps
-	//ofSetFrameRate(60);
+    smoke.setup(WIDTH, HEIGHT);
+    /*
+    for (int i = 4; i < WIDTH; i += 100){
+            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    }
+    */
+    for (int i = 4; i < WIDTH; i += 100){
+            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    }
+
 
     // load shader to blackout the hand
 	blackHandShader.load("", "shader.frag");
@@ -25,6 +34,7 @@ void ofApp::setup() {
 	buffer.begin();
 	ofClear(0,0,0,0);
 	buffer.end();
+
 }
 
 //--------------------------------------------------------------
@@ -33,11 +43,15 @@ void ofApp::update() {
 	ofBackground(100, 100, 100);
 
 	kinect.update();
-	fluid.update();
+	smoke.update();
 
-    updateCvImages();
-    contourFinder.findContours(grayImage, 100, (kinect.width*kinect.height) / 2, 5, false, true);
-    collectContours();
+    if (kinect.isFrameNew()) {
+        updateCvImages();
+        cvfilter.update(kinect.getDepthPixels());
+
+        contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
+        collectContours();
+    }
 
 	// show framerate in titlebar
 	ofSetWindowTitle(ofToString(ofGetFrameRate()));
@@ -50,47 +64,28 @@ void ofApp::draw() {
 
     buffer.begin();
     // draw the contours, and make the smoke see it as an obstacle
-    fluid.begin();
+    smoke.begin();
     for (int i = 0; i < contourFinder.blobs.size(); i++){
-
         polyContour[i].draw();
-
     }
-    fluid.end();
+    smoke.end();
 
     // draw the smoke
-    fluid.draw();
+    smoke.draw();
 
-     buffer.end();
+    buffer.end();
 
     //buffer.draw(0, 0);
 
     /* contour shader */
     blackHandShader.begin();
 
-    blackHandShader.setUniformTexture("tex", grayImage.getTextureReference(), 0);
+    blackHandShader.setUniformTexture("tex", cvfilter.getThreshImage().getTextureReference(), 0);
     blackHandShader.setUniformTexture("fbo", buffer.getTextureReference(), 1);
 
     //contourFinder.draw(0, 0);
-    grayImage.draw(0,0);
+    cvfilter.draw();
     blackHandShader.end();
-
-
-
-    /* contour non shader
-    for (int i = 0; i < contourFinder.blobs.size(); i++){
-        polyContour[i].draw();
-    }
-    */
-
-
-
-
-
-
-
-
-
 
     // show debug HUD
     if (showDebugVideo){
@@ -173,54 +168,15 @@ void ofApp::setupKinect() {
     // make sure the kinect is horizontal
     kinect.setCameraTiltAngle(0);
 
-    // values for near and far threshold
-    // these values the points which are interesting
-    nearThreshold = 241;
-	farThreshold = 230;
+
 }
 
 void ofApp::setupOpenCv() {
     // allocates the rgb image holder for the kinect feed
 	colorImg.allocate(kinect.width, kinect.height);
-	// allocate the grayscale image holder for the kinect feed
-	grayImage.allocate(kinect.width, kinect.height);
-	// these are used to make the grawscale with the points we want
-	grayThreshNear.allocate(kinect.width, kinect.height);
-	grayThreshFar.allocate(kinect.width, kinect.height);
+
 }
 
-void ofApp::setupSmokeFluid() {
-
-    // allocate the size need to show the smoke
-    fluid.allocate(WIDTH, HEIGHT, 0.5);
-
-    // some values to get some nice smoke
-    fluid.dissipation = 0.97;
-    fluid.velocityDissipation = 0.995;
-
-    // We don't want any default gravity values
-    fluid.setGravity(ofVec2f(0.0,0.0));
-
-    // list of all the points of origin of the different smoke points
-    std::vector<ofPoint> origins;
-    // for each point we define a color
-    std::vector<ofFloatColor> smokeColors;
-    for (int i = 4; i < WIDTH; i += 100){
-        origins.push_back(ofPoint(i, 0));
-        smokeColors.push_back(ofFloatColor(0.5,0.1,0.0)); // orange
-    }
-
-
-
-
-
-
-
-    // initalise every smoke point with a radius of 10.f and a y vel of 2
-    for (int i = 0; i < origins.size(); i++){
-        fluid.addConstantForce(origins[i], ofPoint(0,1), smokeColors[i], 1.7f);
-    }
-}
 
 void ofApp::drawDebug() {
     // show rgb feed
@@ -235,22 +191,7 @@ void ofApp::drawDebug() {
 
 void ofApp::updateCvImages() {
 	if (kinect.isFrameNew()) {
-        grayImage.resize(kinect.width, kinect.height);
-        grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
-		// load grayscale depth image from the kinect source
-		grayImage.setFromPixels(kinect.getDepthPixels(), kinect.width, kinect.height);
-
-        grayThreshNear = grayImage;
-        grayThreshFar = grayImage;
-        grayThreshNear.threshold(nearThreshold, true);
-        grayThreshFar.threshold(farThreshold);
-        cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-        grayImage.mirror(false, true);
-        grayImage.resize(WIDTH, HEIGHT);
-
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
-        //colorImg.mirror(false, true);
 	}
 }
 

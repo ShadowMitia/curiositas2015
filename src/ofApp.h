@@ -5,7 +5,8 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
-#include "ofxFluid.h"
+#include "Smoke.h"
+#include "OpenCvFilter.h"
 
 #define WIDTH 1280
 #define HEIGHT 800
@@ -41,19 +42,13 @@ public:
 
 	ofxCvColorImage colorImg;
 
-	ofxCvGrayscaleImage grayImage; // grayscale depth image
-	ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
-	ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
+
 
 	ofxCvContourFinder contourFinder;
-
-	int threshold = 200;
 
     // ofxKinect
     int camWidth;
     int camHeight;
-
-    ofxFluid fluid;
 
     std::deque<ofPolyline> polyContour;
 
@@ -64,6 +59,11 @@ public:
     bool showDebugVideo;
 
     ofFbo buffer;
+
+    Smoke smoke;
+    OpenCvFilter cvfilter;
+
+
 };
 
 
