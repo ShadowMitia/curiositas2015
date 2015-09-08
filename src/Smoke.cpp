@@ -27,7 +27,7 @@ void Smoke::addSmokePoint(ofPoint position, ofFloatColor color) {
     origins.push_back(position);
     smokeColors.push_back(color);
     int index = origins.size() - 1;
-    fluid.addConstantForce(origins[index], ofPoint(0,1), smokeColors[index], 1.7f);
+    fluid.addConstantForce(origins[index], ofPoint(1,0), smokeColors[index], 1.7f);
 }
 
 void Smoke::update() {

@@ -18,8 +18,8 @@ void ofApp::setup() {
             smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
     }
     */
-    for (int i = 4; i < WIDTH; i += 100){
-            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    for (int i = 50; i < HEIGHT; i += 100){
+            smoke.addSmokePoint(ofPoint(0, i), ofFloatColor(0.5, 0.1, 0.0));
     }
 
 
@@ -35,6 +35,8 @@ void ofApp::setup() {
 	ofClear(0,0,0,0);
 	buffer.end();
 
+	kinect.setCameraTiltAngle(9.0);
+
 }
 
 //--------------------------------------------------------------
@@ -49,8 +51,9 @@ void ofApp::update() {
         updateCvImages();
         cvfilter.update(kinect.getDepthPixels());
 
-        contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, true);
+        contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, false);
         collectContours();
+        colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
     }
 
 	// show framerate in titlebar
@@ -59,38 +62,43 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    ofBackground(255, 255, 255);
+    ofBackground(0, 0, 0);
 
-
-    buffer.begin();
     // draw the contours, and make the smoke see it as an obstacle
     smoke.begin();
-    for (int i = 0; i < contourFinder.blobs.size(); i++){
-        polyContour[i].draw();
-    }
+
+    ofPushMatrix();
+
+    ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
+
+    contourMesh.draw();
+
+    ofPopMatrix();
+
     smoke.end();
 
     // draw the smoke
     smoke.draw();
 
-    buffer.end();
 
-    //buffer.draw(0, 0);
+    ofPushMatrix();
+    ofSetColor(0);
 
-    /* contour shader */
-    blackHandShader.begin();
+    ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
 
-    blackHandShader.setUniformTexture("tex", cvfilter.getThreshImage().getTextureReference(), 0);
-    blackHandShader.setUniformTexture("fbo", buffer.getTextureReference(), 1);
+    contourMesh.draw();
 
-    //contourFinder.draw(0, 0);
-    cvfilter.draw();
-    blackHandShader.end();
+    ofSetColor(255);
+    contourMesh.drawVertices();
+    ofPopMatrix();
+
 
     // show debug HUD
     if (showDebugVideo){
         drawDebug();
     }
+
+   angle = 0;
 }
 
 
@@ -103,38 +111,47 @@ void ofApp::exit() {
 
 //--------------------------------------------------------------
 void ofApp::keyPressed (int key) {
+    int tempF = cvfilter.getFarThreshold();
+    int tempN = cvfilter.getNearThreshold();
+    std::cout << "n: " << tempN << "f: " << tempF << std::endl;
     switch (key) {
         case '>':
 		case '.':
 		    if (showDebugVideo){
-                farThreshold ++;
-                if (farThreshold > 255) farThreshold = 255;
+                cvfilter.setFarThreshold(tempF + 1);
+                if (cvfilter.getFarThreshold() > 255) cvfilter.setFarThreshold(255);
 		    }
 			break;
 		case '<':
 		case ',':
 		    if (showDebugVideo){
-                farThreshold --;
-                if (farThreshold < 0) farThreshold = 0;
+                cvfilter.setFarThreshold(tempF - 1);
+                if (cvfilter.getFarThreshold() < 0) cvfilter.setFarThreshold(0);
 		    }
 			break;
 
 		case '+':
 		case '=':
 		    if (showDebugVideo){
-                nearThreshold ++;
-                if (nearThreshold > 255) nearThreshold = 255;
+                cvfilter.setNearThreshold(tempN + 1);
+                if (cvfilter.getNearThreshold() > 255) cvfilter.setNearThreshold(255);
 		    }
 			break;
 
 		case '-':
 		    if (showDebugVideo){
-                nearThreshold --;
-                if (nearThreshold < 0) nearThreshold = 0;
+                cvfilter.setNearThreshold(tempN - 1);
+                if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
 		    }
 			break;
         case ' ':
             showDebugVideo = !showDebugVideo;
+            break;
+        case 'p':
+            angle++;
+            if (angle < 45) angle = 0;
+            break;
+        case 'o':
             break;
     }
 }
@@ -174,18 +191,17 @@ void ofApp::setupKinect() {
 void ofApp::setupOpenCv() {
     // allocates the rgb image holder for the kinect feed
 	colorImg.allocate(kinect.width, kinect.height);
-
 }
 
 
 void ofApp::drawDebug() {
     // show rgb feed
-    kinect.draw(0, 0, 400, 300);
+    kinect.draw(0, 0);
     // show contours found bw contourFinder
-    contourFinder.draw(0, 320);
+    contourFinder.draw(0, 0, 400, 300);
     // Show debug info
     stringstream ss;
-    ss << "Far threshold " << farThreshold << " \nNear Threshold " << nearThreshold << " \nKinect width " << kinect.width << " \nKinect height " << kinect.height;
+    ss << "Far threshold " << cvfilter.getFarThreshold() << " \nNear Threshold " << cvfilter.getNearThreshold() << " \nKinect width " << kinect.width << " \nKinect height " << kinect.height;
     ofDrawBitmapString(ss.str(), 0, HEIGHT - 100);
 }
 
@@ -196,6 +212,7 @@ void ofApp::updateCvImages() {
 }
 
 void ofApp::collectContours(){
+
     if (contourFinder.nBlobs > 0) {
         polyContour.clear();
         polyContour.resize(contourFinder.nBlobs);
@@ -203,6 +220,8 @@ void ofApp::collectContours(){
             polyContour[i].addVertices(contourFinder.blobs[i].pts);
             polyContour[i].setClosed(true);
         }
-
     }
+
+    tess.tessellateToMesh(polyContour, OF_POLY_WINDING_NONZERO, contourMesh, true);
+
 }

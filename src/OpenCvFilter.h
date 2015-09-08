@@ -13,13 +13,16 @@ class OpenCvFilter {
         void draw();
 
         ofxCvGrayscaleImage& getThreshImage() { return grayImage; }
+        void setFarThreshold(int newVal);
+        void setNearThreshold(int newVal);
+        int getNearThreshold() { return nearThreshold; }
+        int getFarThreshold() { return farThreshold; }
 
 
     private:
         ofxCvGrayscaleImage grayImage; // grayscale depth image
         ofxCvGrayscaleImage grayThreshNear; // the near thresholded image
         ofxCvGrayscaleImage grayThreshFar; // the far thresholded image
-        ofxCvGrayscaleImage temp;
 
         unsigned char * depthPixels;
 

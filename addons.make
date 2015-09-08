@@ -2,4 +2,4 @@ ofxKinect
 ofxOpenCv
 ofxFluid
 ofxFX
-ofOsc
+ofxOsc

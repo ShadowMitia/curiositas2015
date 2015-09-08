@@ -11,6 +11,7 @@
 #define WIDTH 1280
 #define HEIGHT 800
 
+
 class ofApp : public ofBaseApp {
 public:
 
@@ -50,7 +51,8 @@ public:
     int camWidth;
     int camHeight;
 
-    std::deque<ofPolyline> polyContour;
+    std::vector<ofPolyline> polyContour;
+    ofPath pathContour;
 
     ofShader blackHandShader;
     int nearThreshold;
@@ -62,6 +64,11 @@ public:
 
     Smoke smoke;
     OpenCvFilter cvfilter;
+
+    ofTessellator tess;
+    ofMesh contourMesh;
+
+    int angle;
 
 
 };
