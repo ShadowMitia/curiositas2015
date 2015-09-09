@@ -23,9 +23,6 @@ void ofApp::setup() {
     }
 
 
-    // load shader to blackout the hand
-	blackHandShader.load("", "shader.frag");
-
     // debug HUD boolean
 	showDebugVideo = false;
 
@@ -35,7 +32,10 @@ void ofApp::setup() {
 	ofClear(0,0,0,0);
 	buffer.end();
 
-	kinect.setCameraTiltAngle(9.0);
+	//kinect.setCameraTiltAngle(9.0);
+	kinect.setCameraTiltAngle(-8.0);
+
+	oscSender.setup("localhost", 2000);
 
 }
 
@@ -51,18 +51,11 @@ void ofApp::update() {
         updateCvImages();
         cvfilter.update(kinect.getDepthPixels());
 
-        contourFinder.findContours(cvfilter.getThreshImage(), 100, (kinect.width*kinect.height) / 2, 5, false, false);
+        contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, false);
+        contoursManager.processContours(contourFinder.blobs);
         collectContours();
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
     }
-
-	// show framerate in titlebar
-	ofSetWindowTitle(ofToString(ofGetFrameRate()));
-}
-
-//--------------------------------------------------------------
-void ofApp::draw() {
-    ofBackground(0, 0, 0);
 
     // draw the contours, and make the smoke see it as an obstacle
     smoke.begin();
@@ -77,6 +70,19 @@ void ofApp::draw() {
 
     smoke.end();
 
+	// show framerate in titlebar
+	ofSetWindowTitle(ofToString(ofGetFrameRate()));
+
+
+	sendOsc();
+}
+
+//--------------------------------------------------------------
+void ofApp::draw() {
+    ofBackground(0, 0, 0);
+
+
+
     // draw the smoke
     smoke.draw();
 
@@ -90,7 +96,18 @@ void ofApp::draw() {
 
     ofSetColor(255);
     contourMesh.drawVertices();
+
+
+    ofSetColor(255,0,0);
+    for (int i = 0; i < contoursManager.centroids.size(); i++){
+        int tempX = contoursManager.centroids[i].x;
+        int tempY = contoursManager.centroids[i].y;
+        ofCircle(tempX,tempY, 5);
+    }
+
     ofPopMatrix();
+
+
 
 
     // show debug HUD
@@ -113,7 +130,6 @@ void ofApp::exit() {
 void ofApp::keyPressed (int key) {
     int tempF = cvfilter.getFarThreshold();
     int tempN = cvfilter.getNearThreshold();
-    std::cout << "n: " << tempN << "f: " << tempF << std::endl;
     switch (key) {
         case '>':
 		case '.':
@@ -223,5 +239,19 @@ void ofApp::collectContours(){
     }
 
     tess.tessellateToMesh(polyContour, OF_POLY_WINDING_NONZERO, contourMesh, true);
+
+}
+
+void ofApp::sendOsc() {
+
+    //oscMessage.setAddress("test");
+     ofxOscMessage oscMessage;
+    int test = (int)ofRandom(0, 127);
+    stringstream ss;
+    ss << test;
+    std::cout << ss.str() << std::endl;
+    //oscMessage.setAddress("/mouse/position");
+    oscMessage.addStringArg(ss.str());
+    oscSender.sendMessage(oscMessage);
 
 }

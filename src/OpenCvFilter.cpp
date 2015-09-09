@@ -14,8 +14,8 @@ void OpenCvFilter::setup(int imageWidth, int imageHeight, int screenWidth, int s
 
     // values for near and far threshold
     // these values the points which are interesting
-    nearThreshold = 216;
-	farThreshold = 200;
+    nearThreshold = 200;
+	farThreshold = 180;
 
 	depthPixels = 0;
 
@@ -31,7 +31,7 @@ void OpenCvFilter::update(unsigned char* _depthPixels){
     grayThreshNear.threshold(nearThreshold, true);
     grayThreshFar.threshold(farThreshold);
     cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-    grayImage.mirror(false, true);
+    grayImage.mirror(true, true);
 }
 
 

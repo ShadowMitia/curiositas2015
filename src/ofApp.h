@@ -5,11 +5,17 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
+#include "ofxOsc.h"
+
+
 #include "Smoke.h"
 #include "OpenCvFilter.h"
+#include "ContourManager.h"
+
 
 #define WIDTH 1280
 #define HEIGHT 800
+
 
 
 class ofApp : public ofBaseApp {
@@ -37,6 +43,8 @@ public:
     void updateCvImages();
     void collectContours();
 
+    void sendOsc();
+
 	void drawDebug();
 
 	ofxKinect kinect;
@@ -54,7 +62,6 @@ public:
     std::vector<ofPolyline> polyContour;
     ofPath pathContour;
 
-    ofShader blackHandShader;
     int nearThreshold;
     int farThreshold;
 
@@ -69,6 +76,12 @@ public:
     ofMesh contourMesh;
 
     int angle;
+
+    ofxOscSender oscSender;
+
+
+
+    ContourManager contoursManager;
 
 
 };
