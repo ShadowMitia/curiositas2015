@@ -3,173 +3,171 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-    ofEnableAlphaBlending();
-	//ofSetLogLevel(OF_LOG_VERBOSE);
+  ofEnableAlphaBlending();
+  //ofSetLogLevel(OF_LOG_VERBOSE);
 
-    // call setup methods
-    setupKinect();
-    setupOpenCv();
-    cvfilter.setup(kinect.width, kinect.height, WIDTH, HEIGHT);
-    //cvfilter.startThread();
+  // call setup methods
+  setupKinect();
+  setupOpenCv();
+  cvfilter.setup(kinect.width, kinect.height, WIDTH, HEIGHT);
+  //cvfilter.startThread();
 
-    smoke.setup(WIDTH, HEIGHT);
-    /*
+  smoke.setup(WIDTH, HEIGHT);
+  /*
     for (int i = 4; i < WIDTH; i += 100){
-            smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
+    smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
     }
-    */
-    for (int i = 50; i < HEIGHT; i += 100){
-            smoke.addSmokePoint(ofPoint(0, i), ofFloatColor(0.5, 0.1, 0.0));
-    }
+  */
+  for (int i = 50; i < HEIGHT; i += 100){
+    smoke.addSmokePoint(ofPoint(0, i), ofFloatColor(0.5, 0.1, 0.0));
+  }
 
 
-    // debug HUD boolean
-	showDebugVideo = false;
+  // debug HUD boolean
+  showDebugVideo = false;
 
-	buffer.allocate(WIDTH, HEIGHT, GL_RGBA);
+  //kinect.setCameraTiltAngle(9.0);
+  //kinect.setCameraTiltAngle(-8.0);
+  kinect.setCameraTiltAngle(0.0);
 
-	buffer.begin();
-	ofClear(0,0,0,0);
-	buffer.end();
-
-	//kinect.setCameraTiltAngle(9.0);
-	kinect.setCameraTiltAngle(-8.0);
-
-	oscSender.setup("localhost", 2000);
+  
+  oscSender.setup("localhost", 2000);
 
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 
-	ofBackground(100, 100, 100);
+  ofBackground(100, 100, 100);
 
-	kinect.update();
-	smoke.update();
+  kinect.update();
+  smoke.update();
 
-    if (kinect.isFrameNew()) {
-        updateCvImages();
-        cvfilter.update(kinect.getDepthPixels());
+  if (kinect.isFrameNew()) {
+    updateCvImages();
+    cvfilter.update(kinect.getDepthPixels());
 
-        contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, false);
-        contoursManager.processContours(contourFinder.blobs);
-        collectContours();
-        colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
-    }
+    contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, true);
+    contoursManager.processContours(contourFinder.blobs);
+	
+    contoursManager.collectContours();
 
-    // draw the contours, and make the smoke see it as an obstacle
-    smoke.begin();
+    colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
+  }
 
-    ofPushMatrix();
+  // draw the contours, and make the smoke see it as an obstacle
+  smoke.begin();
 
-    ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
+  ofPushMatrix();
 
-    contourMesh.draw();
+  ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
 
-    ofPopMatrix();
+  contourMesh.draw();
 
-    smoke.end();
+  ofPopMatrix();
 
-	// show framerate in titlebar
-	ofSetWindowTitle(ofToString(ofGetFrameRate()));
+  smoke.end();
+
+  // show framerate in titlebar
+  ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
 
-	sendOsc();
+  sendOsc();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    ofBackground(0, 0, 0);
+  ofBackground(0, 0, 0);
 
+  // draw the smoke
+  //smoke.draw();
 
+  ofPushMatrix();
+  ofSetColor(0);
 
-    // draw the smoke
-    smoke.draw();
+  ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
 
+  contourMesh.draw();
 
-    ofPushMatrix();
-    ofSetColor(0);
+  ofSetColor(255);
+  contourMesh.drawVertices();
 
-    ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
+  ofSetColor(255, 0, 0);
+  
+  for (int i = 0; i < contoursManager.centroids.size(); i++) {
+    //ofSetColor((int)ofRandom(0, 256), (int)ofRandom(0, 256), (int)ofRandom(0, 256));
+    int tempX = contoursManager.centroids[i].x;
+    int tempY = contoursManager.centroids[i].y;
+    ofCircle(tempX, tempY, 5);
+    stringstream ss;
+    ss << contoursManager.contourInfos[i].tag << endl;
+    ss << ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime;
+    ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
 
-    contourMesh.draw();
+  }
 
-    ofSetColor(255);
-    contourMesh.drawVertices();
+  ofPopMatrix();
 
+  // show debug HUD
+  if (showDebugVideo){
+    drawDebug();
+  }
 
-    ofSetColor(255,0,0);
-    for (int i = 0; i < contoursManager.centroids.size(); i++){
-        int tempX = contoursManager.centroids[i].x;
-        int tempY = contoursManager.centroids[i].y;
-        ofCircle(tempX,tempY, 5);
-    }
-
-    ofPopMatrix();
-
-
-
-
-    // show debug HUD
-    if (showDebugVideo){
-        drawDebug();
-    }
-
-   angle = 0;
+  angle = 0;
 }
 
 
 //--------------------------------------------------------------
 
 void ofApp::exit() {
-	kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
-	kinect.close(); // close the kinect
+  kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
+  kinect.close(); // close the kinect
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed (int key) {
-    int tempF = cvfilter.getFarThreshold();
-    int tempN = cvfilter.getNearThreshold();
-    switch (key) {
-        case '>':
-		case '.':
-		    if (showDebugVideo){
-                cvfilter.setFarThreshold(tempF + 1);
-                if (cvfilter.getFarThreshold() > 255) cvfilter.setFarThreshold(255);
-		    }
-			break;
-		case '<':
-		case ',':
-		    if (showDebugVideo){
-                cvfilter.setFarThreshold(tempF - 1);
-                if (cvfilter.getFarThreshold() < 0) cvfilter.setFarThreshold(0);
-		    }
-			break;
-
-		case '+':
-		case '=':
-		    if (showDebugVideo){
-                cvfilter.setNearThreshold(tempN + 1);
-                if (cvfilter.getNearThreshold() > 255) cvfilter.setNearThreshold(255);
-		    }
-			break;
-
-		case '-':
-		    if (showDebugVideo){
-                cvfilter.setNearThreshold(tempN - 1);
-                if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
-		    }
-			break;
-        case ' ':
-            showDebugVideo = !showDebugVideo;
-            break;
-        case 'p':
-            angle++;
-            if (angle < 45) angle = 0;
-            break;
-        case 'o':
-            break;
+  int tempF = cvfilter.getFarThreshold();
+  int tempN = cvfilter.getNearThreshold();
+  switch (key) {
+  case '>':
+  case '.':
+    if (showDebugVideo){
+      cvfilter.setFarThreshold(tempF + 1);
+      if (cvfilter.getFarThreshold() > 255) cvfilter.setFarThreshold(255);
     }
+    break;
+  case '<':
+  case ',':
+    if (showDebugVideo){
+      cvfilter.setFarThreshold(tempF - 1);
+      if (cvfilter.getFarThreshold() < 0) cvfilter.setFarThreshold(0);
+    }
+    break;
+
+  case '+':
+  case '=':
+    if (showDebugVideo){
+      cvfilter.setNearThreshold(tempN + 1);
+      if (cvfilter.getNearThreshold() > 255) cvfilter.setNearThreshold(255);
+    }
+    break;
+
+  case '-':
+    if (showDebugVideo){
+      cvfilter.setNearThreshold(tempN - 1);
+      if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
+    }
+    break;
+  case ' ':
+    showDebugVideo = !showDebugVideo;
+    break;
+  case 'p':
+    angle++;
+    if (angle < 45) angle = 0;
+    break;
+  case 'o':
+    break;
+  }
 }
 
 //--------------------------------------------------------------
@@ -191,67 +189,64 @@ void ofApp::windowResized(int w, int h)
 
 void ofApp::setupKinect() {
 
-    // calibrates the depth image with the rgb image
-    kinect.setRegistration(true);
+  // calibrates the depth image with the rgb image
+  kinect.setRegistration(true);
 
-    // init kinect and open the first one found
-	kinect.init();
-	kinect.open();
+  // init kinect and open the first one found
+  kinect.init();
+  kinect.open();
 
-    // make sure the kinect is horizontal
-    kinect.setCameraTiltAngle(0);
+  // make sure the kinect is horizontal
+  kinect.setCameraTiltAngle(0);
 
 
 }
 
 void ofApp::setupOpenCv() {
-    // allocates the rgb image holder for the kinect feed
-	colorImg.allocate(kinect.width, kinect.height);
+  // allocates the rgb image holder for the kinect feed
+  colorImg.allocate(kinect.width, kinect.height);
 }
 
 
 void ofApp::drawDebug() {
-    // show rgb feed
-    kinect.draw(0, 0);
-    // show contours found bw contourFinder
-    contourFinder.draw(0, 0, 400, 300);
-    // Show debug info
-    stringstream ss;
-    ss << "Far threshold " << cvfilter.getFarThreshold() << " \nNear Threshold " << cvfilter.getNearThreshold() << " \nKinect width " << kinect.width << " \nKinect height " << kinect.height;
-    ofDrawBitmapString(ss.str(), 0, HEIGHT - 100);
+  // show rgb feed
+  kinect.draw(0, 0);
+  // show contours found bw contourFinder
+  contourFinder.draw(0, 0, 400, 300);
+  // Show debug info
+  stringstream ss;
+  ss << "Far threshold " << cvfilter.getFarThreshold() << " \nNear Threshold " << cvfilter.getNearThreshold() << " \nKinect width " << kinect.width << " \nKinect height " << kinect.height;
+  ofDrawBitmapString(ss.str(), 0, HEIGHT - 100);
 }
 
 void ofApp::updateCvImages() {
-	if (kinect.isFrameNew()) {
-        colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
-	}
+  if (kinect.isFrameNew()) {
+    colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
+  }
 }
 
-void ofApp::collectContours(){
+// void ofApp::collectContours(){
 
-    if (contourFinder.nBlobs > 0) {
-        polyContour.clear();
-        polyContour.resize(contourFinder.nBlobs);
-        for (int i = 0; i < contourFinder.blobs.size(); i++){
-            polyContour[i].addVertices(contourFinder.blobs[i].pts);
-            polyContour[i].setClosed(true);
-        }
-    }
+//     if (contourFinder.nBlobs > 0) {
+//         polyContour.clear();
+//         polyContour.resize(contourFinder.nBlobs);
+//         for (int i = 0; i < contourFinder.blobs.size(); i++){
+//             polyContour[i].addVertices(contourFinder.blobs[i].pts);
+//             polyContour[i].setClosed(true);
+//         }
+//     }
 
-    tess.tessellateToMesh(polyContour, OF_POLY_WINDING_NONZERO, contourMesh, true);
+//     tess.tessellateToMesh(polyContour, OF_POLY_WINDING_POSITIVE, contourMesh);
 
-}
+// }
 
 void ofApp::sendOsc() {
 
-    //oscMessage.setAddress("test");
-     ofxOscMessage oscMessage;
-    int test = (int)ofRandom(0, 127);
-    stringstream ss;
-    ss << test;
-    std::cout << ss.str() << std::endl;
-    //oscMessage.setAddress("/mouse/position");
-    oscMessage.addStringArg(ss.str());
-    oscSender.sendMessage(oscMessage);
+  ofxOscMessage oscMessage;
+  int test = (int)ofRandom(0, 127);
+  stringstream ss;
+  ss << test;
+  oscMessage.addStringArg(ss.str());
+  oscSender.sendMessage(oscMessage);
 
 }

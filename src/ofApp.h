@@ -19,69 +19,62 @@
 
 
 class ofApp : public ofBaseApp {
-public:
+ public:
 
-	void setup();
-	void update();
-	void draw();
-	void exit();
+  void setup();
+  void update();
+  void draw();
+  void exit();
 
-	void keyPressed(int key);
-	void mouseDragged(int x, int y, int button);
-	void mousePressed(int x, int y, int button);
-	void mouseReleased(int x, int y, int button);
-	void windowResized(int w, int h);
+  void keyPressed(int key);
+  void mouseDragged(int x, int y, int button);
+  void mousePressed(int x, int y, int button);
+  void mouseReleased(int x, int y, int button);
+  void windowResized(int w, int h);
 
-	void setupKinect();
-	void setupOpenCv();
-	void setupSmokeFluid();
+  void setupKinect();
+  void setupOpenCv();
+  void setupSmokeFluid();
 
-	void updateKinect();
-    void updateOpenCv();
-    void updateFluid();
+  void updateKinect();
+  void updateOpenCv();
+  void updateFluid();
 
-    void updateCvImages();
-    void collectContours();
+  void updateCvImages();
+  void collectContours();
 
-    void sendOsc();
+  void sendOsc();
 
-	void drawDebug();
+  void drawDebug();
 
-	ofxKinect kinect;
+  ofxKinect kinect;
 
-	ofxCvColorImage colorImg;
-
-
-
-	ofxCvContourFinder contourFinder;
-
-    // ofxKinect
-    int camWidth;
-    int camHeight;
-
-    std::vector<ofPolyline> polyContour;
-    ofPath pathContour;
-
-    int nearThreshold;
-    int farThreshold;
-
-    bool showDebugVideo;
-
-    ofFbo buffer;
-
-    Smoke smoke;
-    OpenCvFilter cvfilter;
-
-    ofTessellator tess;
-    ofMesh contourMesh;
-
-    int angle;
-
-    ofxOscSender oscSender;
+  ofxCvColorImage colorImg;
 
 
 
-    ContourManager contoursManager;
+  ofxCvContourFinder contourFinder;
+
+  
+  std::vector<ofPolyline> polyContour;
+  ofPath pathContour;
+
+  int nearThreshold;
+  int farThreshold;
+
+  bool showDebugVideo;
+
+  Smoke smoke;
+  OpenCvFilter cvfilter;
+
+  ofTessellator tess;
+  ofMesh contourMesh;
+
+  int angle;
+
+  ofxOscSender oscSender;
+
+  ContourManager contoursManager;
 
 
 };
