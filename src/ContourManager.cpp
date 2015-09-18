@@ -17,7 +17,7 @@ void ContourManager::trackObjects() {
 	for (int j = 0; j < oldCentroids.size(); j++) {
 	    temp = blobs[i].centroid.squareDistance(oldCentroids[0]);
 	    float d = centroids[i].squareDistance(oldCentroids[j]);
-	    if (d > temp) {
+	    if (d < temp) {
 		temp = d;
 		pos = j;
 	    }
