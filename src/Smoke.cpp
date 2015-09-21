@@ -31,7 +31,6 @@ void Smoke::addSmokePoint(ofPoint position, ofFloatColor color) {
 }
 
 void Smoke::update() {
-    //std::cout << "update" << std::endl;
     fluid.update();
 }
 

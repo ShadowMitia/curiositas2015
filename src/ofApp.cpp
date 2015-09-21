@@ -25,13 +25,28 @@ void ofApp::setup() {
 
     // debug HUD boolean
     showDebugVideo = false;
+    showDebug = false;
 
     //kinect.setCameraTiltAngle(9.0);
     //kinect.setCameraTiltAngle(-8.0);
     kinect.setCameraTiltAngle(0.0);
-
   
     oscSender.setup("localhost", 2000);
+
+    /// DMX stuff
+
+    dmxLightsAndSmokeModules = 1;
+    dmxLightsAndSmokeChannelsPerModule = 4;
+    dmxPort = "/dev/ttyUSB0";
+    dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
+    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++) {
+	dmxLightsAndSmokeMessage[i] = 0;
+    }
+    dmxLightsAndSmoke.connect(dmxPort, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
+    dmxLightsAndSmoke.update(true);
+
+    dmxLightsAndSmokeTimer = -1;
+    isDmxLightAndSmokeTimerStarted = false;
 }
 
 //--------------------------------------------------------------
@@ -42,7 +57,7 @@ void ofApp::update() {
     kinect.update();
     smoke.update();
 
-    if (!kinect.isFrameNew()) { return; }
+    //if (!kinect.isFrameNew()) { return; }
     if (kinect.isFrameNew()) {
 	updateCvImages();
 	cvfilter.update(kinect.getDepthPixels());
@@ -71,8 +86,34 @@ void ofApp::update() {
     // show framerate in titlebar
     ofSetWindowTitle(ofToString(ofGetFrameRate()));
 
-
     sendOsc();
+
+    // DMX
+    
+    if (contourFinder.blobs.size() == 0 && !isDmxLightAndSmokeTimerStarted){
+	dmxLightsAndSmokeTimer = ofGetElapsedTimef();
+	isDmxLightAndSmokeTimerStarted = true;
+    } else if (contourFinder.blobs.size() > 0){
+	isDmxLightAndSmokeTimerStarted = false;
+    }
+
+    if ( ofGetElapsedTimef() - dmxLightsAndSmokeTimer > 10){
+	dmxLightsAndSmokeMessage[1] = 0;
+	dmxLightsAndSmokeMessage[2] = 0;
+	dmxLightsAndSmokeMessage[3] = 255;
+    } else {
+	dmxLightsAndSmokeMessage[1] = 0;
+	dmxLightsAndSmokeMessage[2] = 255;
+	dmxLightsAndSmokeMessage[3] = 0;
+    }
+
+    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++){
+	dmxLightsAndSmoke.setLevel(i+1, dmxLightsAndSmokeMessage[i]);
+    }
+    
+    if (dmxLightsAndSmoke.isConnected()){
+	dmxLightsAndSmoke.update();
+    }
 }
 
 //--------------------------------------------------------------
@@ -84,38 +125,30 @@ void ofApp::draw() {
 
     ofPushMatrix();
     ofSetColor(0);
-
     ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
-
     contourMesh.draw();
-
-    ofSetColor(255);
-    contourMesh.drawVertices();
-
-    ofSetColor(255, 0, 0);
-
-    if (contoursManager.contourInfos.size() && contourFinder.blobs.size()){
-	for (int i = 0; i < contoursManager.contourInfos.size(); i++) {
-	    //ofSetColor((int)ofRandom(0, 256), (int)ofRandom(0, 256), (int)ofRandom(0, 256));
-	    int tempX = contoursManager.contourInfos[i].point.x;
-	    int tempY = contoursManager.contourInfos[i].point.y;
-	    ofCircle(tempX, tempY, 5);
-	    stringstream ss;
-	    ss << i << endl;
-	    ss << ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime;
-	    ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
-    
+    if (showDebug){	
+	ofSetColor(255);
+	contourMesh.drawVertices();
+	ofSetColor(255, 0, 0);
+	if (contoursManager.contourInfos.size() && contourFinder.blobs.size()){
+	    for (int i = 0; i < contoursManager.contourInfos.size(); i++) {
+		int tempX = contoursManager.contourInfos[i].point.x;
+		int tempY = contoursManager.contourInfos[i].point.y;
+		ofCircle(tempX, tempY, 5);
+		stringstream ss;
+		ss << i << endl;
+		ss << ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime;
+		ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
+	    }
 	}
-    }
-
+    }    
     ofPopMatrix();
 
-    // show debug HUD
+    // show debug video HUD
     if (showDebugVideo){
 	drawDebug();
     }
-
-    angle = 0;
 }
 
 
@@ -124,6 +157,9 @@ void ofApp::draw() {
 void ofApp::exit() {
     kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
     kinect.close(); // close the kinect
+
+    dmxLightsAndSmoke.clear();
+    dmxLightsAndSmoke.update(true);
 }
 
 //--------------------------------------------------------------
@@ -160,14 +196,25 @@ void ofApp::keyPressed (int key) {
 	    if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
 	}
 	break;
-    case ' ':
+    case 'v':
 	showDebugVideo = !showDebugVideo;
 	break;
-    case 'p':
-	angle++;
-	if (angle < 45) angle = 0;
+    case ' ':
+	showDebug = !showDebug;
 	break;
-    case 'o':
+    case OF_KEY_UP:
+	if (showDebugVideo){
+	    angle++;
+	    if(angle>30) angle=30;
+	    kinect.setCameraTiltAngle(angle);
+	}
+	break;			
+    case OF_KEY_DOWN:
+	if (showDebugVideo){
+	    angle--;
+	    if(angle<-30) angle=-30;
+	    kinect.setCameraTiltAngle(angle);
+	}
 	break;
     }
 }

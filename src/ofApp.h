@@ -1,22 +1,20 @@
 #ifndef OF_APP
 #define OF_APP
 
-
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxKinect.h"
 #include "ofxOsc.h"
+#include "ofxDmx.h"
 
+#include <vector>
 
 #include "Smoke.h"
 #include "OpenCvFilter.h"
 #include "ContourManager.h"
 
-
 #define WIDTH 1280
 #define HEIGHT 800
-
-
 
 class ofApp : public ofBaseApp {
  public:
@@ -50,12 +48,8 @@ class ofApp : public ofBaseApp {
   ofxKinect kinect;
 
   ofxCvColorImage colorImg;
-
-
-
   ofxCvContourFinder contourFinder;
 
-  
   std::vector<ofPolyline> polyContour;
   ofPath pathContour;
 
@@ -63,6 +57,7 @@ class ofApp : public ofBaseApp {
   int farThreshold;
 
   bool showDebugVideo;
+  bool showDebug;
 
   Smoke smoke;
   OpenCvFilter cvfilter;
@@ -76,7 +71,14 @@ class ofApp : public ofBaseApp {
 
   ContourManager contoursManager;
 
+  ofxDmx dmxLightsAndSmoke;
+  int dmxLightsAndSmokeModules, dmxLightsAndSmokeChannelsPerModule;
+  std::vector<int> dmxLightsAndSmokeMessage;
+  float dmxLightsAndSmokeTimer;
+  bool isDmxLightAndSmokeTimerStarted;
 
+  string dmxPort;
+  
 };
 
 
