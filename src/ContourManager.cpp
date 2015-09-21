@@ -4,52 +4,56 @@ ContourManager::ContourManager() {
     oscMessage = "";
     leftRightMinLimitValue = 1.0 - 1/10000;
     upDownMinLimitValue = 1.0;
-    maxDistance = 5;
+    maxDistance = 100;
     totalContours = 0;
+
+    contourInfos.resize(10);
 }
 
 void ContourManager::trackObjects() {
+    if (centroids.size() > 0){
+        vector<int> updated;
+	for (unsigned int j = 0; j < centroids.size(); j++) {	
+	    bool isClosePoint = false;       
+  	    for (unsigned int i = 0; i < contourInfos.size(); i++) {	
+		if ( centroids[j].distance(contourInfos[i].point) < 50 ) {
+		    contourInfos[i].point = centroids[j];
+		    updated.push_back(i);
+		    isClosePoint = true;
+		    break;
+     		}
+	    }
 
-    // For every point, calculate which point is it closest to in previous frame
-    for (int i = 0; i < centroids.size(); i++) {
-	int pos = 0;
-	float temp = -1;
-	for (int j = 0; j < oldCentroids.size(); j++) {
-	    temp = blobs[i].centroid.squareDistance(oldCentroids[0]);
-	    float d = centroids[i].squareDistance(oldCentroids[j]);
-	    if (d < temp) {
-		temp = d;
-		pos = j;
+	    if (!isClosePoint) {
+		for (unsigned int i = 0; i < contourInfos.size(); i++) {
+		    if ( contourInfos[i].point.x == 25000 && contourInfos[i].point.y == 25000){
+			contourInfos[i].point = centroids[j];
+			contourInfos[i].startTime = ofGetElapsedTimef();
+			updated.push_back(i);
+			break;
+		    }
+		}
 	    }
 	}
+	
+	for (unsigned int i = 0; i < contourInfos.size(); i++) {
+	    bool trouve = false;
+	    for (unsigned int j = 0; j < updated.size(); j++) {
+		if (i == updated[j]) {
+		    trouve = true;
+		    break;
+		}
+	    }
 
-	// If distance is too big
-	if (temp < maxDistance && temp >= 0) {
-	    ContourInfo tempC = contourInfos[pos];
-	    contourInfos[pos] = contourInfos[i];
-	    contourInfos[i] = tempC;
-	    contourInfos[i].isRecentlyUpdated = true;
-	} else { // change point position in list, to have tag at same position as the point detected
-	    ContourInfo contour;
-	    contour.tag = totalContours;
-	    contour.startTime = ofGetElapsedTimef();
-	    contour.isRecentlyUpdated = true;
-	    contourInfos.push_back(contour);
-	    totalContours++;
+	    if (!trouve){
+		contourInfos[i].point.x = 25000;
+		contourInfos[i].point.y = 25000;
+		contourInfos[i].startTime = -1;
+	    }
 	}
     }
-    
-    for (int i = 0; i < contourInfos.size(); i++) {
-	if (contourInfos[i].isRecentlyUpdated){
-	    contourInfos[i].isRecentlyUpdated = false;
-	} else {
-	    contourInfos.erase(contourInfos.begin() + i);
-	}
-    }
-
-    totalContours = contourInfos.size();
-    
 }
+
 
 void ContourManager::processContours(vector<ofxCvBlob> _blobs) {
     blobs = _blobs;
@@ -58,13 +62,13 @@ void ContourManager::processContours(vector<ofxCvBlob> _blobs) {
     goingLeft.clear();
 
 
-    for (int i = 0; i < blobs.size(); i++){
+    for (unsigned int i = 0; i < blobs.size(); i++){
 	centroids.push_back(blobs[i].centroid);
     }
 
     trackObjects();
 
-    for (int i = 0; i < centroids.size(); i++){
+    for (unsigned int i = 0; i < centroids.size(); i++){
 	if (oldCentroids.size() == centroids.size() ){
 	    //std::cout << "diff: " << centroids[i].y - oldCentroids[i].y << /*" y: " << centroids[i].y << " old y: " << oldCentroids[i].y <<*/ std::endl;
 	    if ( abs( centroids[i].y - oldCentroids[i].y ) > leftRightMinLimitValue ){
@@ -91,7 +95,7 @@ void ContourManager::collectContours() {
     if (blobs.size() > 0) {
 	polyContour.clear();
 	polyContour.resize(blobs.size());
-	for (int i = 0; i < blobs.size(); i++) {
+	for (unsigned int i = 0; i < blobs.size(); i++) {
 	    polyContour[i].addVertices(blobs[i].pts);
 	    polyContour[i].setClosed(true);
 	}

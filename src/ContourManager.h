@@ -5,7 +5,9 @@
 #include "ofMain.h"
 
 #include <string>
+#include <list>
 #include <vector>
+#include <cmath>
 
 #include "ofxOpenCv.h"
 
@@ -13,12 +15,11 @@
 class ContourInfo {
  public:
   int tag;
-  unsigned long long startTime;
+  ofPoint point;
+  float startTime;
   bool isRecentlyUpdated;
-ContourInfo() : tag(-1), startTime(-1), isRecentlyUpdated(false) {
-      
+ContourInfo() : tag(-1), point(-1,-1), startTime(-1), isRecentlyUpdated(false) {    
   }
-  
 };
 
 class ContourManager {
@@ -41,9 +42,7 @@ public:
     int leftRightMinLimitValue;
     int upDownMinLimitValue;
 
-    vector<ofxCvBlob> blobs;
-
-    std::vector<ContourInfo> contourInfos;
+    vector<ofxCvBlob> blobs; 
 
     ofTessellator tess;
     ofMesh contourMesh;
@@ -53,6 +52,10 @@ public:
     float maxDistance;
 
     int totalContours;
+
+
+    // tracker stuff
+    vector<ContourInfo> contourInfos;
 };
 
 
