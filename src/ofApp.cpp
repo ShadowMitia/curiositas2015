@@ -22,7 +22,6 @@ void ofApp::setup() {
 	smoke.addSmokePoint(ofPoint(0, i), ofFloatColor(0.5, 0.1, 0.0));
     }
 
-
     // debug HUD boolean
     showDebugVideo = false;
     showDebug = false;
@@ -35,14 +34,15 @@ void ofApp::setup() {
 
     /// DMX stuff
 
-    dmxLightsAndSmokeModules = 1;
+    dmxLightsAndSmokeModules = 2;
     dmxLightsAndSmokeChannelsPerModule = 4;
     dmxPort = "/dev/ttyUSB0";
-    dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
+    dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule + 1);
     for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++) {
 	dmxLightsAndSmokeMessage[i] = 0;
     }
-    dmxLightsAndSmoke.connect(dmxPort, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
+    //dmxLightsAndSmoke.connect(dmxPort, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
+    dmxLightsAndSmoke.connect(0, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
     dmxLightsAndSmoke.update(true);
 
     dmxLightsAndSmokeTimer = -1;
@@ -93,7 +93,7 @@ void ofApp::update() {
     if (contourFinder.blobs.size() == 0 && !isDmxLightAndSmokeTimerStarted){
 	dmxLightsAndSmokeTimer = ofGetElapsedTimef();
 	isDmxLightAndSmokeTimerStarted = true;
-    } else if (contourFinder.blobs.size() > 0){
+    } else if (contourFinder.blobs.size() > 0 && isDmxLightsAndSmokeTimerStarted){
 	isDmxLightAndSmokeTimerStarted = false;
     }
 
@@ -101,10 +101,12 @@ void ofApp::update() {
 	dmxLightsAndSmokeMessage[1] = 0;
 	dmxLightsAndSmokeMessage[2] = 0;
 	dmxLightsAndSmokeMessage[3] = 255;
+	dmxLightsAndSmokeMessage[5] = 0;
     } else {
 	dmxLightsAndSmokeMessage[1] = 0;
 	dmxLightsAndSmokeMessage[2] = 255;
 	dmxLightsAndSmokeMessage[3] = 0;
+	dmxLightsAndSmokeMessage[5] = 80;
     }
 
     for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++){
