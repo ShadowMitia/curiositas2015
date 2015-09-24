@@ -18,8 +18,8 @@ void ofApp::setup() {
       smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
       }
     */
-    for (int i = 50; i < HEIGHT; i += 100){
-	smoke.addSmokePoint(ofPoint(0, i), ofFloatColor(0.5, 0.1, 0.0));
+    for (int i = 100; i < 701; i += (600/8.0)){
+        smoke.addSmokePoint(ofPoint(WIDTH, i), ofFloatColor(0.6, 0.1, 0.0));
     }
 
     // debug HUD boolean
@@ -29,17 +29,17 @@ void ofApp::setup() {
     //kinect.setCameraTiltAngle(9.0);
     //kinect.setCameraTiltAngle(-8.0);
     kinect.setCameraTiltAngle(0.0);
-  
-    oscSender.setup("localhost", 2000);
+
+    oscSender.setup("localhost", 5001);
 
     /// DMX stuff
 
-    dmxLightsAndSmokeModules = 2;
+    dmxLightsAndSmokeModules = 1;
     dmxLightsAndSmokeChannelsPerModule = 4;
     dmxPort = "/dev/ttyUSB0";
-    dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule + 1);
+    dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule, 0);
     for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++) {
-	dmxLightsAndSmokeMessage[i] = 0;
+        dmxLightsAndSmokeMessage[i] = 0;
     }
     //dmxLightsAndSmoke.connect(dmxPort, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
     dmxLightsAndSmoke.connect(0, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
@@ -47,11 +47,17 @@ void ofApp::setup() {
 
     dmxLightsAndSmokeTimer = -1;
     isDmxLightAndSmokeTimerStarted = false;
+
+    if (dmxLightsAndSmoke.isConnected()){
+        cout << "DMX!!!!!!!!" << endl;
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
-
+	dmxLightsAndSmokeMessage[1] = 255;
+	dmxLightsAndSmokeMessage[2] = 255;
+	dmxLightsAndSmokeMessage[3] = 255;
     ofBackground(100, 100, 100);
 
     kinect.update();
@@ -64,7 +70,7 @@ void ofApp::update() {
 
 	contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, true);
 	contoursManager.processContours(contourFinder.blobs);
-	
+
 	contoursManager.collectContours();
 
 	colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
@@ -76,8 +82,9 @@ void ofApp::update() {
     ofPushMatrix();
 
     ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
+    ofTranslate(-50, 0);
 
-    contourMesh.draw();
+    contoursManager.contourMesh.draw();
 
     ofPopMatrix();
 
@@ -89,30 +96,28 @@ void ofApp::update() {
     sendOsc();
 
     // DMX
-    
+
     if (contourFinder.blobs.size() == 0 && !isDmxLightAndSmokeTimerStarted){
 	dmxLightsAndSmokeTimer = ofGetElapsedTimef();
 	isDmxLightAndSmokeTimerStarted = true;
-    } else if (contourFinder.blobs.size() > 0 && isDmxLightsAndSmokeTimerStarted){
+    } else if (contourFinder.blobs.size() > 0 && isDmxLightAndSmokeTimerStarted){
 	isDmxLightAndSmokeTimerStarted = false;
     }
 
     if ( ofGetElapsedTimef() - dmxLightsAndSmokeTimer > 10){
-	dmxLightsAndSmokeMessage[1] = 0;
+	dmxLightsAndSmokeMessage[2] = 0;
+	dmxLightsAndSmokeMessage[3] = 0;
+	dmxLightsAndSmokeMessage[4] = 255;
+    } else {
 	dmxLightsAndSmokeMessage[2] = 0;
 	dmxLightsAndSmokeMessage[3] = 255;
-	dmxLightsAndSmokeMessage[5] = 0;
-    } else {
-	dmxLightsAndSmokeMessage[1] = 0;
-	dmxLightsAndSmokeMessage[2] = 255;
-	dmxLightsAndSmokeMessage[3] = 0;
-	dmxLightsAndSmokeMessage[5] = 80;
+	dmxLightsAndSmokeMessage[4] = 0;
     }
 
     for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++){
 	dmxLightsAndSmoke.setLevel(i+1, dmxLightsAndSmokeMessage[i]);
     }
-    
+
     if (dmxLightsAndSmoke.isConnected()){
 	dmxLightsAndSmoke.update();
     }
@@ -123,15 +128,16 @@ void ofApp::draw() {
     ofBackground(0, 0, 0);
 
     // draw the smoke
-    //smoke.draw();
+    smoke.draw();
 
     ofPushMatrix();
     ofSetColor(0);
     ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
+    ofTranslate(-50, 0);
     contourMesh.draw();
-    if (showDebug){	
-	ofSetColor(255);
-	contourMesh.drawVertices();
+    ofSetColor(255);
+    contourMesh.drawVertices();
+
 	ofSetColor(255, 0, 0);
 	if (contoursManager.contourInfos.size() && contourFinder.blobs.size()){
 	    for (int i = 0; i < contoursManager.contourInfos.size(); i++) {
@@ -144,9 +150,10 @@ void ofApp::draw() {
 		ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
 	    }
 	}
-    }    
     ofPopMatrix();
-
+	dmxLightsAndSmokeMessage[2] = 0;
+	dmxLightsAndSmokeMessage[3] = 0;
+	dmxLightsAndSmokeMessage[4] = 255;
     // show debug video HUD
     if (showDebugVideo){
 	drawDebug();
@@ -210,7 +217,7 @@ void ofApp::keyPressed (int key) {
 	    if(angle>30) angle=30;
 	    kinect.setCameraTiltAngle(angle);
 	}
-	break;			
+	break;
     case OF_KEY_DOWN:
 	if (showDebugVideo){
 	    angle--;
@@ -272,7 +279,7 @@ void ofApp::drawDebug() {
 
 void ofApp::updateCvImages() {
     if (kinect.isFrameNew()) {
-	colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
+        colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
     }
 }
 
@@ -296,8 +303,62 @@ void ofApp::sendOsc() {
     ofxOscMessage oscMessage;
     int test = (int)ofRandom(0, 127);
     stringstream ss;
-    ss << test;
+    /*
+    ss << kinect.width;
     oscMessage.addStringArg(ss.str());
-    oscSender.sendMessage(oscMessage);
+    ss.clear();
+    ss << kinect.height;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    for (int i = 0; i < contoursManager.oldCentroids.size(); i++){
+    ss << contoursManager.blobs[i].area * (ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime ) * contoursManager.contourInfos[i].distanceTravelled;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    ss << contoursManager.contourInfos[i].point.x;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
 
+
+*/
+    if(contoursManager.oldCentroids.size()){
+    /*
+    ss << kinect.width;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    ss << kinect.height;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    */
+    float timeMax = 60.f;
+    float distanceMax = 1000.f;
+    contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.1);
+    ss << ofMap(contoursManager.contourInfos[0].interpolationTime * std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax) * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax), 0, (kinect.width * kinect.height)/15 * timeMax * distanceMax, 0, 127);
+    cout << "OSC 1 : " << ss.str() << endl;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    
+    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.x, 0.1);
+    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.width, 0, 127);
+    cout << "OSC 2 : " << ss.str() << endl;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+    
+    contoursManager.contourInfos[0].interpolationDistance = ofLerp(kinect.width - contoursManager.contourInfos[0].point.x, contoursManager.contourInfos[0].point.x, 0.1);
+    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, WIDTH, 0,  0, 127);
+    cout << "OSC 3 : " << ss.str() << endl;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+
+    
+    contoursManager.contourInfos[0].interpolationSize = ofLerp(contoursManager.contourInfos[0].interpolationSize, contoursManager.blobs[0].area, 0.01);
+    ss << ofMap(contoursManager.contourInfos[0].interpolationSize , 0, (kinect.width * kinect.height) / 15, 0, 127, true);
+    cout << ofMap(contoursManager.contourInfos[0].interpolationSize , 0, (kinect.width * kinect.height) / 15, 0, 127, true) << endl;
+    cout << "OSC 4 : " << ss.str() << endl;
+    oscMessage.addStringArg(ss.str());
+    ss.clear();
+}
+
+    //}
+
+    oscSender.sendMessage(oscMessage);
 }

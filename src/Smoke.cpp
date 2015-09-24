@@ -16,7 +16,7 @@ void Smoke::setup(int screen_width, int screen_height, float scale, bool HD) {
     fluid.allocate(screen_width, screen_height, scale, HD);
 
     // some values to get some nice smoke
-    fluid.dissipation = 0.97;
+    fluid.dissipation = 0.98;// 0.97
     fluid.velocityDissipation = 0.995;
 
     // We don't want any default gravity values
@@ -27,7 +27,7 @@ void Smoke::addSmokePoint(ofPoint position, ofFloatColor color) {
     origins.push_back(position);
     smokeColors.push_back(color);
     int index = origins.size() - 1;
-    fluid.addConstantForce(origins[index], ofPoint(1,0), smokeColors[index], 1.7f);
+    fluid.addConstantForce(origins[index], ofPoint(-1, 0), smokeColors[index], 1.8f);
 }
 
 void Smoke::update() {

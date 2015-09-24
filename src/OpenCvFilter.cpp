@@ -31,7 +31,7 @@ void OpenCvFilter::update(unsigned char* _depthPixels){
   grayThreshNear.threshold(nearThreshold, true);
   grayThreshFar.threshold(farThreshold);
   cvAnd(grayThreshNear.getCvImage(), grayThreshFar.getCvImage(), grayImage.getCvImage(), NULL);
-  grayImage.mirror(true, true);
+  //grayImage.mirror(false, true);
 }
 
 

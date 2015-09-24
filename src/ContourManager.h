@@ -17,8 +17,13 @@ class ContourInfo {
   int tag;
   ofPoint point;
   float startTime;
+  float distanceTravelled;
   bool isRecentlyUpdated;
-ContourInfo() : tag(-1), point(-1,-1), startTime(-1), isRecentlyUpdated(false) {    
+  float interpolationTime;
+  float interpolationDistance;
+  float interpolationMinusDistance;
+  float interpolationSize;
+ContourInfo() : tag(-1), point(-1,-1), startTime(-1), isRecentlyUpdated(false) {
   }
 };
 
@@ -42,7 +47,8 @@ public:
     int leftRightMinLimitValue;
     int upDownMinLimitValue;
 
-    vector<ofxCvBlob> blobs; 
+    vector<ofxCvBlob> blobs;
+    vector<ofxCvBlob> oldBlobs;
 
     ofTessellator tess;
     ofMesh contourMesh;
