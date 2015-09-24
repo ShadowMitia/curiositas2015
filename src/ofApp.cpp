@@ -2,7 +2,8 @@
 
 
 //--------------------------------------------------------------
-void ofApp::setup() {
+void ofApp::setup()
+{
     ofEnableAlphaBlending();
     //ofSetLogLevel(OF_LOG_VERBOSE);
 
@@ -18,7 +19,8 @@ void ofApp::setup() {
       smoke.addSmokePoint(ofPoint(i, 0), ofFloatColor(0.5, 0.1, 0.0));
       }
     */
-    for (int i = 100; i < 701; i += (600/8.0)){
+    for (int i = 100; i < 701; i += (600/8.0))
+    {
         smoke.addSmokePoint(ofPoint(WIDTH, i), ofFloatColor(0.6, 0.1, 0.0));
     }
 
@@ -39,7 +41,8 @@ void ofApp::setup() {
     dmxLightsAndSmokeChannelsPerModule = 4;
     dmxPort = "/dev/ttyUSB0";
     dmxLightsAndSmokeMessage.resize(dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule, 0);
-    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++) {
+    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++)
+    {
         dmxLightsAndSmokeMessage[i] = 0;
     }
     //dmxLightsAndSmoke.connect(dmxPort, dmxLightsAndSmokeModules * dmxLightsAndSmokeChannelsPerModule);
@@ -49,32 +52,35 @@ void ofApp::setup() {
     dmxLightsAndSmokeTimer = -1;
     isDmxLightAndSmokeTimerStarted = false;
 
-    if (dmxLightsAndSmoke.isConnected()){
+    if (dmxLightsAndSmoke.isConnected())
+    {
         cout << "DMX!!!!!!!!" << endl;
     }
 }
 
 //--------------------------------------------------------------
-void ofApp::update() {
-	dmxLightsAndSmokeMessage[1] = 255;
-	dmxLightsAndSmokeMessage[2] = 255;
-	dmxLightsAndSmokeMessage[3] = 255;
+void ofApp::update()
+{
+    dmxLightsAndSmokeMessage[1] = 255;
+    dmxLightsAndSmokeMessage[2] = 255;
+    dmxLightsAndSmokeMessage[3] = 255;
     ofBackground(100, 100, 100);
 
     kinect.update();
     smoke.update();
 
     //if (!kinect.isFrameNew()) { return; }
-    if (kinect.isFrameNew()) {
-	updateCvImages();
-	cvfilter.update(kinect.getDepthPixels());
+    if (kinect.isFrameNew())
+    {
+        updateCvImages();
+        cvfilter.update(kinect.getDepthPixels());
 
-	contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, true);
-	contoursManager.processContours(contourFinder.blobs);
+        contourFinder.findContours(cvfilter.getThreshImage(), 500, (kinect.width*kinect.height) / 2, 5, false, true);
+        contoursManager.processContours(contourFinder.blobs);
 
-	contoursManager.collectContours();
+        contoursManager.collectContours();
 
-	colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
+        colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
     }
 
     // draw the contours, and make the smoke see it as an obstacle
@@ -97,34 +103,43 @@ void ofApp::update() {
 
     // DMX
 
-    if (contourFinder.blobs.size() == 0 && !isDmxLightAndSmokeTimerStarted){
-	dmxLightsAndSmokeTimer = ofGetElapsedTimef();
-	isDmxLightAndSmokeTimerStarted = true;
-    } else if (contourFinder.blobs.size() > 0 && isDmxLightAndSmokeTimerStarted){
-	isDmxLightAndSmokeTimerStarted = false;
+    if (contourFinder.blobs.size() == 0 && !isDmxLightAndSmokeTimerStarted)
+    {
+        dmxLightsAndSmokeTimer = ofGetElapsedTimef();
+        isDmxLightAndSmokeTimerStarted = true;
+    }
+    else if (contourFinder.blobs.size() > 0 && isDmxLightAndSmokeTimerStarted)
+    {
+        isDmxLightAndSmokeTimerStarted = false;
     }
 
-    if ( ofGetElapsedTimef() - dmxLightsAndSmokeTimer > 10){
-	dmxLightsAndSmokeMessage[2] = 0;
-	dmxLightsAndSmokeMessage[3] = 0;
-	dmxLightsAndSmokeMessage[4] = 255;
-    } else {
-	dmxLightsAndSmokeMessage[2] = 0;
-	dmxLightsAndSmokeMessage[3] = 255;
-	dmxLightsAndSmokeMessage[4] = 0;
+    if ( ofGetElapsedTimef() - dmxLightsAndSmokeTimer > 10)
+    {
+        dmxLightsAndSmokeMessage[2] = 0;
+        dmxLightsAndSmokeMessage[3] = 0;
+        dmxLightsAndSmokeMessage[4] = 255;
+    }
+    else
+    {
+        dmxLightsAndSmokeMessage[2] = 0;
+        dmxLightsAndSmokeMessage[3] = 255;
+        dmxLightsAndSmokeMessage[4] = 0;
     }
 
-    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++){
-	dmxLightsAndSmoke.setLevel(i+1, dmxLightsAndSmokeMessage[i]);
+    for (unsigned int i = 0; i < dmxLightsAndSmokeMessage.size(); i++)
+    {
+        dmxLightsAndSmoke.setLevel(i+1, dmxLightsAndSmokeMessage[i]);
     }
 
-    if (dmxLightsAndSmoke.isConnected()){
-	dmxLightsAndSmoke.update();
+    if (dmxLightsAndSmoke.isConnected())
+    {
+        dmxLightsAndSmoke.update();
     }
 }
 
 //--------------------------------------------------------------
-void ofApp::draw() {
+void ofApp::draw()
+{
     ofBackground(0, 0, 0);
 
     // draw the smoke
@@ -139,33 +154,40 @@ void ofApp::draw() {
     contourMesh.draw();
     ofSetColor(255);
     contourMesh.drawVertices();
+    if (showDebug)
+    {
+        ofSetColor(255, 0, 0);
+        if (contoursManager.contourInfos.size() && contourFinder.blobs.size())
+        {
+            for (int i = 0; i < contoursManager.contourInfos.size(); i++)
+            {
+                int tempX = contoursManager.contourInfos[i].point.x;
+                int tempY = contoursManager.contourInfos[i].point.y;
+                ofCircle(tempX, tempY, 5);
+                stringstream ss;
+                ss << i << endl;
+                ss << ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime;
+                ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
+            }
+        }
+    }
 
-	ofSetColor(255, 0, 0);
-	if (contoursManager.contourInfos.size() && contourFinder.blobs.size()){
-	    for (int i = 0; i < contoursManager.contourInfos.size(); i++) {
-		int tempX = contoursManager.contourInfos[i].point.x;
-		int tempY = contoursManager.contourInfos[i].point.y;
-		ofCircle(tempX, tempY, 5);
-		stringstream ss;
-		ss << i << endl;
-		ss << ofGetElapsedTimef() - contoursManager.contourInfos[i].startTime;
-		ofDrawBitmapStringHighlight(ss.str(), tempX, tempY);
-	    }
-	}
     ofPopMatrix();
-	dmxLightsAndSmokeMessage[2] = 0;
-	dmxLightsAndSmokeMessage[3] = 0;
-	dmxLightsAndSmokeMessage[4] = 255;
+    dmxLightsAndSmokeMessage[2] = 0;
+    dmxLightsAndSmokeMessage[3] = 0;
+    dmxLightsAndSmokeMessage[4] = 255;
     // show debug video HUD
-    if (showDebugVideo){
-	drawDebug();
+    if (showDebugVideo)
+    {
+        drawDebug();
     }
 }
 
 
 //--------------------------------------------------------------
 
-void ofApp::exit() {
+void ofApp::exit()
+{
     kinect.setCameraTiltAngle(0); // zero the tilt angle on exit
     kinect.close(); // close the kinect
 
@@ -174,59 +196,67 @@ void ofApp::exit() {
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed (int key) {
+void ofApp::keyPressed (int key)
+{
     int tempF = cvfilter.getFarThreshold();
     int tempN = cvfilter.getNearThreshold();
-    switch (key) {
+    switch (key)
+    {
     case '>':
     case '.':
-	if (showDebugVideo){
-	    cvfilter.setFarThreshold(tempF + 1);
-	    if (cvfilter.getFarThreshold() > 255) cvfilter.setFarThreshold(255);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            cvfilter.setFarThreshold(tempF + 1);
+            if (cvfilter.getFarThreshold() > 255) cvfilter.setFarThreshold(255);
+        }
+        break;
     case '<':
     case ',':
-	if (showDebugVideo){
-	    cvfilter.setFarThreshold(tempF - 1);
-	    if (cvfilter.getFarThreshold() < 0) cvfilter.setFarThreshold(0);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            cvfilter.setFarThreshold(tempF - 1);
+            if (cvfilter.getFarThreshold() < 0) cvfilter.setFarThreshold(0);
+        }
+        break;
 
     case '+':
     case '=':
-	if (showDebugVideo){
-	    cvfilter.setNearThreshold(tempN + 1);
-	    if (cvfilter.getNearThreshold() > 255) cvfilter.setNearThreshold(255);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            cvfilter.setNearThreshold(tempN + 1);
+            if (cvfilter.getNearThreshold() > 255) cvfilter.setNearThreshold(255);
+        }
+        break;
 
     case '-':
-	if (showDebugVideo){
-	    cvfilter.setNearThreshold(tempN - 1);
-	    if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            cvfilter.setNearThreshold(tempN - 1);
+            if (cvfilter.getNearThreshold() < 0) cvfilter.setNearThreshold(0);
+        }
+        break;
     case 'v':
-	showDebugVideo = !showDebugVideo;
-	break;
+        showDebugVideo = !showDebugVideo;
+        break;
     case ' ':
-	showDebug = !showDebug;
-	break;
+        showDebug = !showDebug;
+        break;
     case OF_KEY_UP:
-	if (showDebugVideo){
-	    angle++;
-	    if(angle>30) angle=30;
-	    kinect.setCameraTiltAngle(angle);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            angle++;
+            if(angle>30) angle=30;
+            kinect.setCameraTiltAngle(angle);
+        }
+        break;
     case OF_KEY_DOWN:
-	if (showDebugVideo){
-	    angle--;
-	    if(angle<-30) angle=-30;
-	    kinect.setCameraTiltAngle(angle);
-	}
-	break;
+        if (showDebugVideo)
+        {
+            angle--;
+            if(angle<-30) angle=-30;
+            kinect.setCameraTiltAngle(angle);
+        }
+        break;
     }
 }
 
@@ -235,7 +265,8 @@ void ofApp::mouseDragged(int x, int y, int button)
 {}
 
 //--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
+void ofApp::mousePressed(int x, int y, int button)
+{
 
 }
 
@@ -247,7 +278,8 @@ void ofApp::mouseReleased(int x, int y, int button)
 void ofApp::windowResized(int w, int h)
 {}
 
-void ofApp::setupKinect() {
+void ofApp::setupKinect()
+{
 
     // calibrates the depth image with the rgb image
     kinect.setRegistration(true);
@@ -262,13 +294,15 @@ void ofApp::setupKinect() {
 
 }
 
-void ofApp::setupOpenCv() {
+void ofApp::setupOpenCv()
+{
     // allocates the rgb image holder for the kinect feed
     colorImg.allocate(kinect.width, kinect.height);
 }
 
 
-void ofApp::drawDebug() {
+void ofApp::drawDebug()
+{
     // show rgb feed
     kinect.draw(0, 0);
     // show contours found bw contourFinder
@@ -279,8 +313,10 @@ void ofApp::drawDebug() {
     ofDrawBitmapString(ss.str(), 0, HEIGHT - 100);
 }
 
-void ofApp::updateCvImages() {
-    if (kinect.isFrameNew()) {
+void ofApp::updateCvImages()
+{
+    if (kinect.isFrameNew())
+    {
         colorImg.setFromPixels(kinect.getPixels(), kinect.width, kinect.height);
     }
 }
@@ -300,7 +336,8 @@ void ofApp::updateCvImages() {
 
 // }
 
-void ofApp::sendOsc() {
+void ofApp::sendOsc()
+{
 
     ofxOscMessage oscMessage;
     int test = (int)ofRandom(0, 127);
@@ -321,77 +358,80 @@ void ofApp::sendOsc() {
     ss.clear();
 
 
-*/
-    if(contourFinder.blobs.size()){
-    /*
-    ss << kinect.width;
-    oscMessage.addStringArg(ss.str());
-    ss.clear();
-    ss << kinect.height;
-    oscMessage.addStringArg(ss.str());
-    ss.clear();
     */
-    float timeMax = 30.f;
-    float distanceMax = 1000.f;
-    contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.6);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationTime *
-                std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax)  * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax ) ,
-                0,
-                 (kinect.width * kinect.height)/15 *  timeMax  * distanceMax ,
-                0,
-                127, true);
-    //cout << "OSC 1 : " << ss.str() << endl;
-    oscMessage.addStringArg(ss.str());
-    ss.str("");
+    if(contourFinder.blobs.size())
+    {
+        /*
+        ss << kinect.width;
+        oscMessage.addStringArg(ss.str());
+        ss.clear();
+        ss << kinect.height;
+        oscMessage.addStringArg(ss.str());
+        ss.clear();
+        */
+        float timeMax = 30.f;
+        float distanceMax = 1000.f;
+        contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.6);
+        ss << ofMap(contoursManager.contourInfos[0].interpolationTime *
+                    std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax)  * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax ) ,
+                    0,
+                    (kinect.width * kinect.height)/15 *  timeMax  * distanceMax ,
+                    0,
+                    127, true);
+        //cout << "OSC 1 : " << ss.str() << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
 
-    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height, 0, 127, true);
-    //cout << "OSC 2 : " << ss.str() << endl;
-    oscMessage.addStringArg(ss.str());
-    ss.str("");
+        contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
+        ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height, 0, 127, true);
+        //cout << "OSC 2 : " << ss.str() << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
 
-    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
-    ss << ofMap(kinect.height - contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height,  0, 127, true);
-    //cout << "OSC 3 : " << ss.str() << endl;
-    oscMessage.addStringArg(ss.str());
-    ss.str("");
-
-
+        contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
+        ss << ofMap(kinect.height - contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height,  0, 127, true);
+        //cout << "OSC 3 : " << ss.str() << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
 
 
-    //}
 
-    float s = 0;
-    for (int i = 0; i < contoursManager.oldCentroids.size(); i++){
-        s += contoursManager.blobs[i].area;
+
+        //}
+
+        float s = 0;
+        for (int i = 0; i < contoursManager.oldCentroids.size(); i++)
+        {
+            s += contoursManager.blobs[i].area;
+        }
+        cout << "s: " << s << endl;
+        float val = std::pow(ofMap(s , 0, (kinect.width * kinect.height), 0, 1), 1/5.f);
+        cout << val << endl;
+
+        ss << ofMap(val, 0, 1, 0, 127);
+        //cout << "OSC 4 : " << ss.str() << endl;
+        oscMessage.addStringArg(ss.str());
+
+        ss.str("");
+
+
     }
-    cout << "s: " << s << endl;
-    float val = std::pow(ofMap(s , 0, (kinect.width * kinect.height), 0, 1), 1/5.f);
-    cout << val << endl;
-
-    ss << ofMap(val, 0, 1, 0, 127);
-    //cout << "OSC 4 : " << ss.str() << endl;
-    oscMessage.addStringArg(ss.str());
-
-    ss.str("");
-
-
-    }
-    else {
-            cout << "toto" << endl;
+    else
+    {
+        cout << "toto" << endl;
         contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, 0, 0.4);
         ss << contoursManager.contourInfos[0].interpolationTime << endl;
         oscMessage.addStringArg(ss.str());
         ss.str("");
-                contoursManager.contourInfos[0].interpolationDistance  = ofLerp(contoursManager.contourInfos[0].interpolationDistance, 0, 0.4);
+        contoursManager.contourInfos[0].interpolationDistance  = ofLerp(contoursManager.contourInfos[0].interpolationDistance, 0, 0.4);
         ss << contoursManager.contourInfos[0].interpolationDistance << endl;
         oscMessage.addStringArg(ss.str());
         ss.str("");
-                contoursManager.contourInfos[0].interpolationMinusDistance  = ofLerp(contoursManager.contourInfos[0].interpolationMinusDistance, 0, 0.4);
+        contoursManager.contourInfos[0].interpolationMinusDistance  = ofLerp(contoursManager.contourInfos[0].interpolationMinusDistance, 0, 0.4);
         ss << contoursManager.contourInfos[0].interpolationMinusDistance << endl;
         oscMessage.addStringArg(ss.str());
         ss.str("");
-                contoursManager.contourInfos[0].interpolationSize  = ofLerp(contoursManager.contourInfos[0].interpolationSize, 0, 0.4);
+        contoursManager.contourInfos[0].interpolationSize  = ofLerp(contoursManager.contourInfos[0].interpolationSize, 0, 0.4);
         ss << contoursManager.contourInfos[0].interpolationSize << endl;
         oscMessage.addStringArg(ss.str());
         ss.str("");
