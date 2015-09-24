@@ -28,7 +28,8 @@ void ofApp::setup() {
 
     //kinect.setCameraTiltAngle(9.0);
     //kinect.setCameraTiltAngle(-8.0);
-    kinect.setCameraTiltAngle(0.0);
+    angle = 4;
+    kinect.setCameraTiltAngle(angle);
 
     oscSender.setup("localhost", 5001);
 
@@ -332,30 +333,34 @@ void ofApp::sendOsc() {
     float timeMax = 60.f;
     float distanceMax = 1000.f;
     contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.1);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationTime * std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax) * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax), 0, (kinect.width * kinect.height)/15 * timeMax * distanceMax, 0, 127);
-    cout << "OSC 1 : " << ss.str() << endl;
+    ss << ofMap(contoursManager.contourInfos[0].interpolationTime *
+                std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax) * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax),
+                0,
+                (kinect.width * kinect.height)/15 * timeMax * distanceMax,
+                0,
+                127);
+    //cout << "OSC 1 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
-    ss.clear();
-    
+    ss.str("");
+
     contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.x, 0.1);
     ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.width, 0, 127);
-    cout << "OSC 2 : " << ss.str() << endl;
+    //cout << "OSC 2 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
-    ss.clear();
-    
+    ss.str("");
+
     contoursManager.contourInfos[0].interpolationDistance = ofLerp(kinect.width - contoursManager.contourInfos[0].point.x, contoursManager.contourInfos[0].point.x, 0.1);
     ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, WIDTH, 0,  0, 127);
-    cout << "OSC 3 : " << ss.str() << endl;
+    //cout << "OSC 3 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
-    ss.clear();
+    ss.str("");
 
-    
+
     contoursManager.contourInfos[0].interpolationSize = ofLerp(contoursManager.contourInfos[0].interpolationSize, contoursManager.blobs[0].area, 0.01);
     ss << ofMap(contoursManager.contourInfos[0].interpolationSize , 0, (kinect.width * kinect.height) / 15, 0, 127, true);
-    cout << ofMap(contoursManager.contourInfos[0].interpolationSize , 0, (kinect.width * kinect.height) / 15, 0, 127, true) << endl;
-    cout << "OSC 4 : " << ss.str() << endl;
+    //cout << "OSC 4 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
-    ss.clear();
+    ss.str("");
 }
 
     //}

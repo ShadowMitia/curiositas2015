@@ -6109,15 +6109,15 @@
 1441297359 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of-master\src\ofapp.cpp
 	"ofApp.h"
 
-1410249794 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\icon.rc
+1443091110 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\icon.rc
 
-1442935521 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\main.cpp
+1443100777 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\main.cpp
 	"ofMain.h"
 	"ofApp.h"
 	"ofAppGlutWindow.h"
 	"ofGLProgrammableRenderer.h"
 
-1442948674 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.h
+1443100501 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.h
 	"ofMain.h"
 	"ofxOpenCv.h"
 	"ofxKinect.h"
@@ -6128,21 +6128,21 @@
 	"OpenCvFilter.h"
 	"ContourManager.h"
 
-1443029775 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.cpp
+1443100741 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\ofapp.cpp
 	"ofApp.h"
 
-1441467158 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.h
+1443100501 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.h
 	"ofMain.h"
 	"ofxFluid.h"
 
-1443029719 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.cpp
+1443100501 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\smoke.cpp
 	"Smoke.h"
 
-1441638960 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.h
+1443100501 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.h
 	"ofMain.h"
 	"ofxOpenCv.h"
 
-1443029582 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.cpp
+1443100501 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\opencvfilter.cpp
 	"OpenCvFilter.h"
 
 1423071428 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\addons\ofxdmx\src\ofxdmx.cpp
@@ -6336,10 +6336,10 @@
 	"ofxOscSender.h"
 	"ofxOscReceiver.h"
 
-1443028577 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\contourmanager.cpp
+1443100501 source:c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\contourmanager.cpp
 	"ContourManager.h"
 
-1443029174 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\contourmanager.h
+1443100501 c:\users\apoil\desktop\of_v0.8.4_win_cb_release\apps\myapps\fluid_kinect_of\src\contourmanager.h
 	"ofMain.h"
 	<string>
 	<list>

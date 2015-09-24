@@ -14,8 +14,8 @@ void OpenCvFilter::setup(int imageWidth, int imageHeight, int screenWidth, int s
 
   // values for near and far threshold
   // these values the points which are interesting
-  nearThreshold = 200;
-  farThreshold = 180;
+  nearThreshold = 238;
+  farThreshold = 211;
 
   depthPixels = 0;
 
