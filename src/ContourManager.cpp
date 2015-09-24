@@ -62,10 +62,10 @@ void ContourManager::trackObjects()
                 contourInfos[i].point.x = 25000;
                 contourInfos[i].point.y = 25000;
                 contourInfos[i].startTime = -1;
-		contourInfos[i].interpolationDistance = 0;
-		contourInfos[i].interpolationMinusDistance = 0;
-		contourInfos[i].interpolationTime = 0;
-		contourInfos[i].interpolationSize = 0;
+                contourInfos[i].interpolationDistance = 0;
+                contourInfos[i].interpolationMinusDistance = 0;
+                contourInfos[i].interpolationTime = 0;
+                contourInfos[i].interpolationSize = 0;
             }
         }
     }
@@ -87,12 +87,13 @@ void ContourManager::processContours(vector<ofxCvBlob> _blobs)
 
     trackObjects();
 
+
     for (unsigned int i = 0; i < centroids.size(); i++)
     {
         if (oldCentroids.size() == centroids.size() )
         {
             contourInfos[i].distanceTravelled += std::abs( centroids[i].x - oldCentroids[i].x ) + std::abs( centroids[i].y - oldCentroids[i].y );
-            //std::cout << "diff: " << centroids[i].y - oldCentroids[i].y << /*" y: " << centroids[i].y << " old y: " << oldCentroids[i].y <<*/ std::endl;
+            //std::cout << "diff: " << centroids[i].y - oldCentroids[i].y << " y: " << centroids[i].y << " old y: " << oldCentroids[i].y << std::endl;
             if ( abs( centroids[i].y - oldCentroids[i].y ) > leftRightMinLimitValue )
             {
                 goingLeft.push_back( centroids[i].y > oldCentroids[i].y ? 1 : -1);
@@ -113,6 +114,7 @@ void ContourManager::processContours(vector<ofxCvBlob> _blobs)
 
         }
     }
+
 }
 
 void ContourManager::setLeftRightErrorValue(float newValue)

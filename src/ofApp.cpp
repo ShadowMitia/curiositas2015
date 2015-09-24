@@ -83,7 +83,6 @@ void ofApp::update() {
     ofPushMatrix();
 
     ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
-    ofTranslate(-50, 0);
 
     contoursManager.contourMesh.draw();
 
@@ -133,8 +132,10 @@ void ofApp::draw() {
 
     ofPushMatrix();
     ofSetColor(0);
+
+
     ofScale(WIDTH / (float)kinect.width, HEIGHT / (float)kinect.height);
-    ofTranslate(-50, 0);
+
     contourMesh.draw();
     ofSetColor(255);
     contourMesh.drawVertices();
@@ -321,7 +322,7 @@ void ofApp::sendOsc() {
 
 
 */
-    if(contoursManager.oldCentroids.size()){
+    if(contourFinder.blobs.size()){
     /*
     ss << kinect.width;
     oscMessage.addStringArg(ss.str());
@@ -330,40 +331,70 @@ void ofApp::sendOsc() {
     oscMessage.addStringArg(ss.str());
     ss.clear();
     */
-    float timeMax = 60.f;
+    float timeMax = 30.f;
     float distanceMax = 1000.f;
-    contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.1);
+    contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, (kinect.width * kinect.height)/15, 0.6);
     ss << ofMap(contoursManager.contourInfos[0].interpolationTime *
-                std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax) * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax),
+                std::min((ofGetElapsedTimef() - contoursManager.contourInfos[0].startTime), timeMax)  * std::min(contoursManager.contourInfos[0].distanceTravelled, distanceMax ) ,
                 0,
-                (kinect.width * kinect.height)/15 * timeMax * distanceMax,
+                 (kinect.width * kinect.height)/15 *  timeMax  * distanceMax ,
                 0,
-                127);
+                127, true);
     //cout << "OSC 1 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
     ss.str("");
 
-    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.x, 0.1);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.width, 0, 127);
+    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
+    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height, 0, 127, true);
     //cout << "OSC 2 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
     ss.str("");
 
-    contoursManager.contourInfos[0].interpolationDistance = ofLerp(kinect.width - contoursManager.contourInfos[0].point.x, contoursManager.contourInfos[0].point.x, 0.1);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationDistance, WIDTH, 0,  0, 127);
+    contoursManager.contourInfos[0].interpolationDistance = ofLerp(contoursManager.contourInfos[0].interpolationDistance, contoursManager.contourInfos[0].point.y, 0.1);
+    ss << ofMap(kinect.height - contoursManager.contourInfos[0].interpolationDistance, 0, kinect.height,  0, 127, true);
     //cout << "OSC 3 : " << ss.str() << endl;
     oscMessage.addStringArg(ss.str());
     ss.str("");
 
 
-    contoursManager.contourInfos[0].interpolationSize = ofLerp(contoursManager.contourInfos[0].interpolationSize, contoursManager.blobs[0].area, 0.01);
-    ss << ofMap(contoursManager.contourInfos[0].interpolationSize , 0, (kinect.width * kinect.height) / 15, 0, 127, true);
-    //cout << "OSC 4 : " << ss.str() << endl;
-    oscMessage.addStringArg(ss.str());
-    ss.str("");
-}
+
 
     //}
 
+    float s = 0;
+    for (int i = 0; i < contoursManager.oldCentroids.size(); i++){
+        s += contoursManager.blobs[i].area;
+    }
+    cout << "s: " << s << endl;
+    float val = std::pow(ofMap(s , 0, (kinect.width * kinect.height), 0, 1), 1/5.f);
+    cout << val << endl;
+
+    ss << ofMap(val, 0, 1, 0, 127);
+    //cout << "OSC 4 : " << ss.str() << endl;
+    oscMessage.addStringArg(ss.str());
+
+    ss.str("");
+
+
+    }
+    else {
+            cout << "toto" << endl;
+        contoursManager.contourInfos[0].interpolationTime  = ofLerp(contoursManager.contourInfos[0].interpolationTime, 0, 0.4);
+        ss << contoursManager.contourInfos[0].interpolationTime << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
+                contoursManager.contourInfos[0].interpolationDistance  = ofLerp(contoursManager.contourInfos[0].interpolationDistance, 0, 0.4);
+        ss << contoursManager.contourInfos[0].interpolationDistance << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
+                contoursManager.contourInfos[0].interpolationMinusDistance  = ofLerp(contoursManager.contourInfos[0].interpolationMinusDistance, 0, 0.4);
+        ss << contoursManager.contourInfos[0].interpolationMinusDistance << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
+                contoursManager.contourInfos[0].interpolationSize  = ofLerp(contoursManager.contourInfos[0].interpolationSize, 0, 0.4);
+        ss << contoursManager.contourInfos[0].interpolationSize << endl;
+        oscMessage.addStringArg(ss.str());
+        ss.str("");
+    }
     oscSender.sendMessage(oscMessage);
 }
